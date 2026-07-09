@@ -1,6 +1,10 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { AppController } from "./app.controller";
+import { AuthModule } from "./auth/auth.module";
+import { UsersModule } from "./users/users.module";
 
 @Module({
   imports: [
@@ -14,7 +18,11 @@ import { AppController } from "./app.controller";
       autoLoadEntities: true,
       synchronize: true,
     }),
+    ThrottlerModule.forRoot([{ ttl: 60_000, limit: 60 }]),
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
