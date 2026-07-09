@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0C10;--surface:#15171E;--surface2:#1D2028;--border:rgba(255,255,255,.08);--text:#F3F4F7;--muted:#8E94A3;--accent:#2E6BFF;--accent2:#FFD337;--danger:#FF3B5C;--success:#22C55E;--shadow:0 8px 30px rgba(0,0,0,.35);--r:18px}
+[data-theme="light"]{--bg:#F5F6F8;--surface:#FFFFFF;--surface2:#EEF0F4;--border:rgba(10,15,30,.08);--text:#0E1218;--muted:#626B7B;--shadow:0 8px 24px rgba(15,25,50,.10)}
+html,body{margin:0;padding:0;background:var(--bg)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{transition:background .3s}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent2)}
+input,button{font-family:'Manrope',sans-serif}
+input::placeholder{color:var(--muted)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes giftFloat{0%{transform:translateY(50px) scale(.5);opacity:0}12%{opacity:1;transform:translateY(0) scale(1.18)}25%{transform:scale(1)}75%{opacity:1;transform:translateY(-60px) scale(1)}100%{transform:translateY(-140px) scale(1.15);opacity:0}}
+@keyframes giftPop{0%{transform:scale(1)}50%{transform:scale(1.25)}100%{transform:scale(1)}}
+</style>
+</helmet>
+<div data-screen-label="TREETEX App" style="display:flex;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif;transition:background .3s,color .3s">
+
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <aside style="width:236px;flex:0 0 236px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:6px;padding:22px 14px;border-right:1px solid var(--border)">
+      <div onClick="{{ navFeed }}" style="cursor:pointer;padding:4px 10px 18px 10px">
+        <div style="font-family:'Unbounded';font-weight:800;font-size:19px;letter-spacing:.04em">TREETEX</div>
+        <div style="width:64px;height:3px;background:var(--accent2);margin-top:5px;border-radius:2px"></div>
+      </div>
+      <sc-for list="{{ navItems }}" as="ni" hint-placeholder-count="6">
+        <div onClick="{{ ni.go }}" style="{{ ni.style }}" style-hover="background:var(--surface2)">
+          <span style="font-size:15px;font-weight:700">{{ ni.label }}</span>
+          <sc-if value="{{ ni.badge }}" hint-placeholder-val="{{ false }}">
+            <span style="margin-left:auto;background:var(--accent);color:#fff;font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px">{{ ni.badge }}</span>
+          </sc-if>
+        </div>
+      </sc-for>
+      <div style="flex:1"></div>
+      <div onClick="{{ toggleTheme }}" style="cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--border)" style-hover="background:var(--surface2)">
+        <span style="width:34px;height:20px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);position:relative;display:inline-block"><span style="{{ themeKnob }}"></span></span>
+        <span style="font-size:13px;font-weight:700;color:var(--muted)">{{ themeLabel }}</span>
+      </div>
+    </aside>
+  </sc-if>
+
+  <main style="flex:1;min-width:0;max-width:100%">
+
+    <sc-if value="{{ isFeed }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Головна лента" style="max-width:1120px;margin:0 auto;padding:0 16px 100px 16px">
+        <div style="display:flex;align-items:center;gap:12px;padding:16px 0;position:sticky;top:0;background:var(--bg);z-index:5">
+          <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+            <div style="font-family:'Unbounded';font-weight:800;font-size:16px">TREETEX</div>
+          </sc-if>
+          <div onClick="{{ navSearch }}" style="flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:11px 18px;cursor:pointer;color:var(--muted);font-size:14px;font-weight:600" style-hover="border-color:var(--accent)">⌕ Пошук товарів, магазинів, відео…</div>
+          <div onClick="{{ navNotifs }}" style="position:relative;width:40px;height:40px;flex:0 0 40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px" style-hover="border-color:var(--accent)">🔔<sc-if value="{{ notifBadge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-3px;right:-3px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px">{{ notifBadge }}</span></sc-if></div>
+          <div onClick="{{ openChat }}" style="width:40px;height:40px;flex:0 0 40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px" style-hover="border-color:var(--accent)">💬</div>
+          <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+            <div onClick="{{ toggleTheme }}" style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px">{{ themeIcon }}</div>
+          </sc-if>
+        </div>
+
+        <div style="display:flex;gap:14px;overflow-x:auto;padding:6px 0 14px 0">
+          <sc-for list="{{ stories }}" as="st" hint-placeholder-count="6">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto;cursor:pointer">
+              <div style="width:62px;height:62px;border-radius:99px;padding:3px;background:linear-gradient(135deg,var(--accent),var(--accent2))">
+                <img src="{{ st.img }}" alt="{{ st.name }}" style="width:100%;height:100%;border-radius:99px;object-fit:cover;border:3px solid var(--bg);display:block">
+              </div>
+              <span style="font-size:11px;font-weight:600;color:var(--muted);max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ st.name }}</span>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 12px 0">
+          <h2 style="margin:0;font-size:19px;font-weight:800">Зараз у ефірі</h2>
+          <span onClick="{{ openLive }}" style="font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">Усі ефіри →</span>
+        </div>
+        <div style="display:flex;gap:14px;overflow-x:auto;padding-bottom:8px">
+          <sc-for list="{{ liveCards }}" as="lv" hint-placeholder-count="3">
+            <div onClick="{{ lv.open }}" style="flex:0 0 210px;border-radius:var(--r);overflow:hidden;position:relative;cursor:pointer;box-shadow:var(--shadow)" style-hover="transform:translateY(-3px)">
+              <img src="{{ lv.img }}" alt="{{ lv.title }}" style="width:210px;height:280px;object-fit:cover;display:block">
+              <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 40%,rgba(0,0,0,.75))"></div>
+              <div style="position:absolute;top:10px;left:10px;display:flex;gap:6px">
+                <span style="background:var(--danger);color:#fff;font-size:11px;font-weight:800;border-radius:8px;padding:3px 8px;animation:pulse 2s infinite">LIVE</span>
+                <span style="background:rgba(0,0,0,.55);color:#fff;font-size:11px;font-weight:700;border-radius:8px;padding:3px 8px">{{ lv.viewers }}</span>
+              </div>
+              <div style="position:absolute;left:12px;right:12px;bottom:12px;color:#fff">
+                <div style="font-size:13px;font-weight:800;line-height:1.3">{{ lv.title }}</div>
+                <div style="font-size:11px;font-weight:600;opacity:.8;margin-top:3px">{{ lv.host }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;gap:8px;overflow-x:auto;padding:16px 0 6px 0">
+          <sc-for list="{{ categories }}" as="c" hint-placeholder-count="8">
+            <span onClick="{{ c.go }}" style="{{ c.style }}" style-hover="border-color:var(--accent)">{{ c.name }}</span>
+          </sc-for>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:14px 0 12px 0">
+          <h2 style="margin:0;font-size:19px;font-weight:800">Рекомендовано для вас</h2>
+          <span onClick="{{ navSearch }}" style="font-size:13px;font-weight:700;color:var(--accent);cursor:pointer">Каталог →</span>
+        </div>
+        <div style="{{ gridStyle }}">
+          <sc-for list="{{ feedCards }}" as="p" hint-placeholder-count="8">
+            <div onClick="{{ p.open }}" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s" style-hover="transform:translateY(-3px);box-shadow:var(--shadow)">
+              <div style="position:relative">
+                <img src="{{ p.img }}" alt="{{ p.name }}" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block">
+                <sc-if value="{{ p.badge }}" hint-placeholder-val="{{ false }}">
+                  <span style="position:absolute;top:10px;left:10px;background:var(--accent2);color:#111;font-size:11px;font-weight:800;border-radius:8px;padding:3px 8px">{{ p.badge }}</span>
+                </sc-if>
+                <span onClick="{{ p.fav }}" style="{{ p.favStyle }}">♥</span>
+              </div>
+              <div style="padding:12px 14px 14px 14px;display:flex;flex-direction:column;gap:5px;flex:1">
+                <div style="font-size:13.5px;font-weight:700;line-height:1.35">{{ p.name }}</div>
+                <div style="font-size:11.5px;color:var(--muted);font-weight:600">★ {{ p.rating }} · {{ p.reviews }} відгуків</div>
+                <div style="display:flex;align-items:baseline;gap:7px;margin-top:auto">
+                  <span style="font-size:16px;font-weight:800">{{ p.priceFmt }}</span>
+                  <sc-if value="{{ p.oldFmt }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:12px;color:var(--muted);text-decoration:line-through">{{ p.oldFmt }}</span>
+                  </sc-if>
+                </div>
+                <button onClick="{{ p.add }}" style="margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:9px 0;font-size:13px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">У кошик</button>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isSearch }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Каталог і пошук" style="max-width:1120px;margin:0 auto;padding:0 16px 110px 16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0;position:sticky;top:0;background:var(--bg);z-index:5">
+          <div onClick="{{ navFeed }}" style="width:40px;height:40px;flex:0 0 40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">←</div>
+          <input value="{{ query }}" onChange="{{ setQuery }}" placeholder="Пошук серед 2 400 000 товарів…" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:12px 18px;font-size:14px;font-weight:600;color:var(--text);outline:none">
+        </div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:12px">
+          <sc-for list="{{ filterChips }}" as="f" hint-placeholder-count="6">
+            <span onClick="{{ f.toggle }}" style="{{ f.style }}" style-hover="border-color:var(--accent)">{{ f.name }}</span>
+          </sc-for>
+        </div>
+        <div style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:12px">{{ resultsLabel }}</div>
+        <div style="{{ gridStyle }}">
+          <sc-for list="{{ searchCards }}" as="p" hint-placeholder-count="6">
+            <div onClick="{{ p.open }}" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer" style-hover="transform:translateY(-3px);box-shadow:var(--shadow)">
+              <img src="{{ p.img }}" alt="{{ p.name }}" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block">
+              <div style="padding:12px 14px 14px 14px">
+                <div style="font-size:13.5px;font-weight:700;line-height:1.35">{{ p.name }}</div>
+                <div style="font-size:11.5px;color:var(--muted);font-weight:600;margin-top:4px">★ {{ p.rating }} · {{ p.category }}</div>
+                <div style="font-size:16px;font-weight:800;margin-top:6px">{{ p.priceFmt }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProduct }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Картка товару" style="max-width:1060px;margin:0 auto;padding:0 16px 130px 16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0">
+          <div onClick="{{ goBack }}" style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">←</div>
+          <div style="font-size:15px;font-weight:800">Товар</div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <div onClick="{{ pv.fav }}" style="{{ pv.favBtnStyle }}">♥</div>
+            <div style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px">↗</div>
+          </div>
+        </div>
+        <div style="{{ productLayout }}">
+          <div>
+            <img src="{{ pv.imgBig }}" alt="{{ pv.name }}" style="width:100%;aspect-ratio:4/5;object-fit:cover;border-radius:var(--r);display:block;box-shadow:var(--shadow)">
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <sc-for list="{{ pv.thumbs }}" as="t" hint-placeholder-count="4">
+                <img src="{{ t.img }}" alt="фото" style="{{ t.style }}">
+              </sc-for>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div>
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <sc-if value="{{ pv.badge }}" hint-placeholder-val="{{ false }}"><span style="background:var(--accent2);color:#111;font-size:11px;font-weight:800;border-radius:8px;padding:4px 10px">{{ pv.badge }}</span></sc-if>
+                <span style="background:var(--surface2);color:var(--muted);font-size:11px;font-weight:700;border-radius:8px;padding:4px 10px">{{ pv.stockLabel }}</span>
+              </div>
+              <h1 style="margin:0;font-size:24px;font-weight:800;line-height:1.25">{{ pv.name }}</h1>
+              <div style="font-size:13px;color:var(--muted);font-weight:600;margin-top:8px">★ {{ pv.rating }} · {{ pv.reviews }} відгуків · продано 1 200+</div>
+              <div style="display:flex;align-items:baseline;gap:10px;margin-top:12px">
+                <span style="font-size:30px;font-weight:800">{{ pv.priceFmt }}</span>
+                <sc-if value="{{ pv.oldFmt }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:16px;color:var(--muted);text-decoration:line-through">{{ pv.oldFmt }}</span>
+                  <span style="background:var(--danger);color:#fff;font-size:12px;font-weight:800;border-radius:8px;padding:3px 8px">{{ pv.discount }}</span>
+                </sc-if>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:800;margin-bottom:8px">Колір</div>
+              <div style="display:flex;gap:8px">
+                <sc-for list="{{ colorOpts }}" as="c" hint-placeholder-count="3"><span onClick="{{ c.pick }}" style="{{ c.style }}">{{ c.name }}</span></sc-for>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:800;margin-bottom:8px">Розмір / варіант</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ sizeOpts }}" as="s" hint-placeholder-count="4"><span onClick="{{ s.pick }}" style="{{ s.style }}">{{ s.name }}</span></sc-for>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button onClick="{{ pv.add }}" style="flex:1;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:14px;padding:15px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="border-color:var(--accent)">У кошик</button>
+              <button onClick="{{ pv.buyNow }}" style="flex:1;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Купити зараз</button>
+            </div>
+            <div onClick="{{ openShop }}" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer" style-hover="border-color:var(--accent)">
+              <img src="{{ pv.sellerImg }}" alt="{{ pv.seller }}" style="width:46px;height:46px;border-radius:99px;object-fit:cover">
+              <div style="flex:1">
+                <div style="font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px">{{ pv.seller }} <span style="color:var(--accent);font-size:12px">✓</span></div>
+                <div style="font-size:12px;color:var(--muted);font-weight:600">★ 4.9 · 48 300 підписників · Перевірений продавець</div>
+              </div>
+              <span style="font-size:13px;font-weight:800;color:var(--accent)">До магазину →</span>
+            </div>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+              <div style="font-size:14px;font-weight:800;margin-bottom:10px">Доставка та гарантія</div>
+              <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:600;color:var(--muted)">
+                <span>Нова пошта — завтра, від 60 ₴ (безкоштовно від 1 500 ₴)</span>
+                <span>Повернення протягом 14 днів без пояснення причин</span>
+                <span>Офіційна гарантія 12 місяців</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <h2 style="font-size:18px;font-weight:800;margin:28px 0 12px 0">Характеристики</h2>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:6px 18px">
+          <sc-for list="{{ pv.specs }}" as="sp" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:20px;padding:11px 0;border-bottom:1px solid var(--border);font-size:13px">
+              <span style="color:var(--muted);font-weight:600">{{ sp.k }}</span><span style="font-weight:700;text-align:right">{{ sp.v }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <h2 style="font-size:18px;font-weight:800;margin:28px 0 12px 0">Відгуки · {{ pv.reviews }}</h2>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ reviewCards }}" as="r" hint-placeholder-count="3">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <img src="{{ r.img }}" alt="{{ r.name }}" style="width:36px;height:36px;border-radius:99px;object-fit:cover">
+                <div style="flex:1"><div style="font-size:13px;font-weight:800">{{ r.name }}</div><div style="font-size:11px;color:var(--muted);font-weight:600">{{ r.date }}</div></div>
+                <span style="color:var(--accent2);font-size:13px;font-weight:800">{{ r.stars }}</span>
+              </div>
+              <div style="font-size:13.5px;line-height:1.55;margin-top:10px;color:var(--text)">{{ r.text }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <h2 style="font-size:18px;font-weight:800;margin:28px 0 12px 0">Схожі товари</h2>
+        <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px">
+          <sc-for list="{{ similarCards }}" as="p" hint-placeholder-count="4">
+            <div onClick="{{ p.open }}" style="flex:0 0 160px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer" style-hover="transform:translateY(-3px)">
+              <img src="{{ p.img }}" alt="{{ p.name }}" style="width:100%;aspect-ratio:1/1;object-fit:cover;display:block">
+              <div style="padding:10px 12px 12px 12px">
+                <div style="font-size:12px;font-weight:700;line-height:1.3">{{ p.name }}</div>
+                <div style="font-size:14px;font-weight:800;margin-top:5px">{{ p.priceFmt }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isShop }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Магазин продавця" style="max-width:1060px;margin:0 auto;padding:0 0 110px 0">
+        <div style="position:relative">
+          <img src="{{ shop.cover }}" alt="обкладинка" style="width:100%;height:190px;object-fit:cover;display:block">
+          <div onClick="{{ goBack }}" style="position:absolute;top:14px;left:14px;width:40px;height:40px;border-radius:99px;background:rgba(0,0,0,.5);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px)">←</div>
+        </div>
+        <div style="padding:0 18px">
+          <div style="display:flex;align-items:flex-end;gap:14px;margin-top:-34px">
+            <img src="{{ shop.logo }}" alt="{{ shop.name }}" style="width:84px;height:84px;border-radius:24px;object-fit:cover;border:4px solid var(--bg)">
+            <div style="flex:1;padding-bottom:4px">
+              <div style="font-size:20px;font-weight:800;display:flex;align-items:center;gap:8px">{{ shop.name }} <span style="color:var(--accent);font-size:14px">✓</span></div>
+              <div style="font-size:12.5px;color:var(--muted);font-weight:600">★ 4.9 · 48 300 підписників · 312 товарів</div>
+            </div>
+          </div>
+          <div style="font-size:13.5px;color:var(--muted);font-weight:600;line-height:1.5;margin-top:12px">{{ shop.desc }}</div>
+          <div style="display:flex;gap:10px;margin-top:14px">
+            <button onClick="{{ toggleFollow }}" style="{{ followStyle }}">{{ followLabel }}</button>
+            <button onClick="{{ openChat }}" style="flex:1;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:12px;padding:12px 0;font-size:13.5px;font-weight:800;cursor:pointer" style-hover="border-color:var(--accent)">Написати</button>
+            <button onClick="{{ openLive }}" style="flex:1;background:var(--danger);color:#fff;border:none;border-radius:12px;padding:12px 0;font-size:13.5px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.1)">● Ефір</button>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:20px;border-bottom:1px solid var(--border);padding-bottom:0">
+            <sc-for list="{{ shopTabs }}" as="t" hint-placeholder-count="4"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.name }}</span></sc-for>
+          </div>
+          <div style="{{ gridStyle }}; margin-top:16px">
+            <sc-for list="{{ shopCards }}" as="p" hint-placeholder-count="6">
+              <div onClick="{{ p.open }}" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer" style-hover="transform:translateY(-3px);box-shadow:var(--shadow)">
+                <img src="{{ p.img }}" alt="{{ p.name }}" style="width:100%;aspect-ratio:4/5;object-fit:cover;display:block">
+                <div style="padding:12px 14px 14px 14px">
+                  <div style="font-size:13px;font-weight:700;line-height:1.35">{{ p.name }}</div>
+                  <div style="font-size:15px;font-weight:800;margin-top:6px">{{ p.priceFmt }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCart }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Кошик" style="max-width:860px;margin:0 auto;padding:0 16px 130px 16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0">
+          <div onClick="{{ navFeed }}" style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">←</div>
+          <h1 style="margin:0;font-size:20px;font-weight:800">Кошик</h1>
+          <span style="color:var(--muted);font-size:14px;font-weight:700">{{ cartCountLabel }}</span>
+        </div>
+        <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:70px 20px;color:var(--muted)">
+            <div style="font-size:44px;margin-bottom:12px">🛒</div>
+            <div style="font-size:16px;font-weight:800;color:var(--text)">Кошик порожній</div>
+            <div style="font-size:13px;font-weight:600;margin-top:6px">Додайте товари з ленти або каталогу</div>
+            <button onClick="{{ navFeed }}" style="margin-top:18px;background:var(--accent);color:#fff;border:none;border-radius:12px;padding:12px 26px;font-size:14px;font-weight:800;cursor:pointer">До покупок</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ cartFull }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ cartCards }}" as="ci" hint-placeholder-count="2">
+              <div style="display:flex;gap:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;animation:slideUp .3s">
+                <img src="{{ ci.img }}" alt="{{ ci.name }}" style="width:84px;height:100px;border-radius:12px;object-fit:cover">
+                <div style="flex:1;display:flex;flex-direction:column">
+                  <div style="font-size:13.5px;font-weight:700;line-height:1.35">{{ ci.name }}</div>
+                  <div style="font-size:11.5px;color:var(--muted);font-weight:600;margin-top:3px">{{ ci.variant }}</div>
+                  <div style="display:flex;align-items:center;gap:12px;margin-top:auto">
+                    <div style="display:flex;align-items:center;gap:0;background:var(--surface2);border-radius:10px;overflow:hidden">
+                      <button onClick="{{ ci.dec }}" style="width:32px;height:32px;border:none;background:none;color:var(--text);font-size:16px;font-weight:800;cursor:pointer">−</button>
+                      <span style="width:28px;text-align:center;font-size:13px;font-weight:800">{{ ci.qty }}</span>
+                      <button onClick="{{ ci.inc }}" style="width:32px;height:32px;border:none;background:none;color:var(--text);font-size:16px;font-weight:800;cursor:pointer">+</button>
+                    </div>
+                    <span style="font-size:16px;font-weight:800">{{ ci.sumFmt }}</span>
+                    <span onClick="{{ ci.remove }}" style="margin-left:auto;color:var(--muted);cursor:pointer;font-size:13px;font-weight:700" style-hover="color:var(--danger)">Видалити</span>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:16px">
+            <input value="{{ promoInput }}" onChange="{{ setPromo }}" placeholder="Промокод (спробуйте TREE10)" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:13px 16px;font-size:13.5px;font-weight:600;color:var(--text);outline:none">
+            <button onClick="{{ applyPromo }}" style="background:var(--accent2);color:#111;border:none;border-radius:12px;padding:0 22px;font-size:13.5px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.05)">Застосувати</button>
+          </div>
+          <sc-if value="{{ promoMsg }}" hint-placeholder-val="{{ false }}"><div style="font-size:12.5px;font-weight:700;color:var(--success);margin-top:8px">{{ promoMsg }}</div></sc-if>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-top:16px">
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;color:var(--muted);padding:5px 0"><span>Товари</span><span>{{ subtotalFmt }}</span></div>
+            <sc-if value="{{ discountFmt }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:700;color:var(--success);padding:5px 0"><span>Знижка за промокодом</span><span>−{{ discountFmt }}</span></div>
+            </sc-if>
+            <div style="display:flex;justify-content:space-between;font-size:13.5px;font-weight:600;color:var(--muted);padding:5px 0"><span>Доставка</span><span>{{ deliveryFmt }}</span></div>
+            <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:800;padding:12px 0 0 0;border-top:1px solid var(--border);margin-top:8px"><span>Разом</span><span>{{ totalFmt }}</span></div>
+            <button onClick="{{ startCheckout }}" style="width:100%;margin-top:14px;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Оформити замовлення</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isCheckout }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Оформлення замовлення" style="max-width:640px;margin:0 auto;padding:0 16px 120px 16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0">
+          <div onClick="{{ checkoutBack }}" style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">←</div>
+          <h1 style="margin:0;font-size:20px;font-weight:800">Оформлення</h1>
+        </div>
+        <sc-if value="{{ notDone }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;gap:6px;margin-bottom:22px">
+            <sc-for list="{{ stepDots }}" as="d" hint-placeholder-count="4"><span style="{{ d.style }}"></span></sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ step1 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;animation:slideUp .3s">
+            <h2 style="margin:0;font-size:16px;font-weight:800">Отримувач і адреса</h2>
+            <input value="{{ coName }}" onChange="{{ setCoName }}" placeholder="Ім'я та прізвище" style="{{ inputStyle }}">
+            <input value="{{ coPhone }}" onChange="{{ setCoPhone }}" placeholder="+380 __ ___ __ __" style="{{ inputStyle }}">
+            <input value="{{ coCity }}" onChange="{{ setCoCity }}" placeholder="Місто" style="{{ inputStyle }}">
+            <input value="{{ coAddr }}" onChange="{{ setCoAddr }}" placeholder="Відділення / адреса доставки" style="{{ inputStyle }}">
+            <sc-if value="{{ coError }}" hint-placeholder-val="{{ false }}"><div style="color:var(--danger);font-size:12.5px;font-weight:700">{{ coError }}</div></sc-if>
+            <button onClick="{{ stepNext }}" style="background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Далі — доставка</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ step2 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;animation:slideUp .3s">
+            <h2 style="margin:0 0 4px 0;font-size:16px;font-weight:800">Спосіб доставки</h2>
+            <sc-for list="{{ deliveryOpts }}" as="d" hint-placeholder-count="3">
+              <div onClick="{{ d.pick }}" style="{{ d.style }}">
+                <div style="flex:1"><div style="font-size:14px;font-weight:800">{{ d.name }}</div><div style="font-size:12px;color:var(--muted);font-weight:600">{{ d.eta }}</div></div>
+                <span style="font-size:14px;font-weight:800">{{ d.price }}</span>
+              </div>
+            </sc-for>
+            <button onClick="{{ stepNext }}" style="margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Далі — оплата</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ step3 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;animation:slideUp .3s">
+            <h2 style="margin:0 0 4px 0;font-size:16px;font-weight:800">Оплата</h2>
+            <sc-for list="{{ payOpts }}" as="d" hint-placeholder-count="3">
+              <div onClick="{{ d.pick }}" style="{{ d.style }}">
+                <div style="flex:1"><div style="font-size:14px;font-weight:800">{{ d.name }}</div><div style="font-size:12px;color:var(--muted);font-weight:600">{{ d.eta }}</div></div>
+              </div>
+            </sc-for>
+            <button onClick="{{ stepNext }}" style="margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:15px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Перевірити замовлення</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ step4 }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;animation:slideUp .3s">
+            <h2 style="margin:0;font-size:16px;font-weight:800">Перевірка замовлення</h2>
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;font-weight:600">
+              <div style="display:flex;justify-content:space-between;gap:16px"><span style="color:var(--muted)">Отримувач</span><span style="font-weight:700;text-align:right">{{ coSummary }}</span></div>
+              <div style="display:flex;justify-content:space-between;gap:16px"><span style="color:var(--muted)">Доставка</span><span style="font-weight:700;text-align:right">{{ deliverySummary }}</span></div>
+              <div style="display:flex;justify-content:space-between;gap:16px"><span style="color:var(--muted)">Оплата</span><span style="font-weight:700;text-align:right">{{ paySummary }}</span></div>
+              <div style="display:flex;justify-content:space-between;gap:16px;border-top:1px solid var(--border);padding-top:10px;font-size:16px;font-weight:800"><span>Разом</span><span>{{ totalFmt }}</span></div>
+            </div>
+            <button onClick="{{ confirmOrder }}" style="background:var(--accent2);color:#111;border:none;border-radius:14px;padding:16px 0;font-size:15px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.05)">Підтвердити та оплатити {{ totalFmt }}</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ step5 }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:50px 10px;animation:slideUp .4s">
+            <div style="width:76px;height:76px;border-radius:99px;background:var(--success);color:#fff;font-size:34px;display:flex;align-items:center;justify-content:center;margin:0 auto 18px auto">✓</div>
+            <h2 style="margin:0;font-size:22px;font-weight:800">Замовлення оформлено</h2>
+            <div style="font-size:14px;color:var(--muted);font-weight:600;margin-top:8px">Номер замовлення <b style="color:var(--text)">{{ orderNo }}</b><br>Очікуйте повідомлення про відправлення</div>
+            <button onClick="{{ navFeed }}" style="margin-top:22px;background:var(--accent);color:#fff;border:none;border-radius:14px;padding:14px 30px;font-size:14px;font-weight:800;cursor:pointer">Повернутися до покупок</button>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Профіль" style="max-width:640px;margin:0 auto;padding:0 16px 120px 16px">
+        <div style="display:flex;align-items:center;gap:14px;padding:24px 0 8px 0">
+          <img src="{{ userImg }}" alt="профіль" style="width:72px;height:72px;border-radius:99px;object-fit:cover;border:3px solid var(--accent)">
+          <div style="flex:1">
+            <div style="font-size:19px;font-weight:800">Олена Коваленко</div>
+            <div style="font-size:13px;color:var(--muted);font-weight:600">@olena.kv · Київ</div>
+          </div>
+          <div onClick="{{ toggleTheme }}" style="width:42px;height:42px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">{{ themeIcon }}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+          <div style="background:var(--accent);color:#fff;border-radius:var(--r);padding:18px">
+            <div style="font-size:12px;font-weight:700;opacity:.8">Баланс гаманця</div>
+            <div style="font-size:24px;font-weight:800;margin-top:4px">1 240 ₴</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+            <div style="font-size:12px;font-weight:700;color:var(--muted)">Бонуси TREETEX</div>
+            <div style="font-size:24px;font-weight:800;margin-top:4px;color:var(--accent2)">380</div>
+          </div>
+        </div>
+        <h2 style="font-size:16px;font-weight:800;margin:22px 0 10px 0">Мої замовлення</h2>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ orders }}" as="o" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px">
+              <img src="{{ o.img }}" alt="замовлення" style="width:44px;height:44px;border-radius:10px;object-fit:cover">
+              <div style="flex:1"><div style="font-size:13px;font-weight:800">{{ o.no }}</div><div style="font-size:11.5px;color:var(--muted);font-weight:600">{{ o.date }} · {{ o.sum }}</div></div>
+              <span style="{{ o.style }}">{{ o.status }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <h2 style="font-size:16px;font-weight:800;margin:22px 0 10px 0">Меню</h2>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+          <sc-for list="{{ profileMenu }}" as="m" hint-placeholder-count="6">
+            <div onClick="{{ m.go }}" style="display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--border);cursor:pointer;font-size:14px;font-weight:700" style-hover="background:var(--surface2)"><span>{{ m.name }}</span><span style="color:var(--muted)">→</span></div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Чат" style="max-width:980px;margin:0 auto;padding:0 16px 110px 16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0">
+          <div onClick="{{ navFeed }}" style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">←</div>
+          <h1 style="margin:0;font-size:20px;font-weight:800">Повідомлення</h1>
+        </div>
+        <div style="{{ chatLayout }}">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+            <sc-for list="{{ bThreads }}" as="t" hint-placeholder-count="3">
+              <div onClick="{{ t.pick }}" style="{{ t.style }}" style-hover="background:var(--surface2)">
+                <img src="{{ t.img }}" alt="{{ t.name }}" style="width:44px;height:44px;border-radius:14px;object-fit:cover">
+                <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:800;display:flex;align-items:center;gap:5px">{{ t.name }} <span style="color:var(--accent);font-size:11px">✓</span></div><div style="font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.last }}</div></div>
+                <sc-if value="{{ t.unread }}" hint-placeholder-val="{{ false }}"><span style="background:var(--accent);color:#fff;font-size:10px;font-weight:800;border-radius:99px;padding:2px 7px">{{ t.unread }}</span></sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);display:flex;flex-direction:column;min-height:420px">
+            <div style="display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--border)">
+              <img src="{{ bActiveImg }}" alt="{{ bActiveName }}" style="width:34px;height:34px;border-radius:11px;object-fit:cover">
+              <div style="flex:1"><div style="font-size:13.5px;font-weight:800">{{ bActiveName }}</div><div style="font-size:11px;color:var(--success);font-weight:700">Онлайн · відповідає ~5 хв</div></div>
+              <button onClick="{{ openShop }}" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 13px;font-size:11.5px;font-weight:800;cursor:pointer" style-hover="border-color:var(--accent)">Магазин</button>
+            </div>
+            <div style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ bMsgCards }}" as="m" hint-placeholder-count="4">
+                <sc-if value="{{ m.isProduct }}" hint-placeholder-val="{{ false }}">
+                  <div onClick="{{ m.open }}" style="{{ m.cardStyle }}" style-hover="border-color:var(--accent)">
+                    <img src="{{ m.pimg }}" alt="{{ m.ptitle }}" style="width:46px;height:56px;border-radius:9px;object-fit:cover">
+                    <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:700;line-height:1.3">{{ m.ptitle }}</div><div style="font-size:13.5px;font-weight:800;margin-top:3px;color:var(--accent)">{{ m.pprice }}</div></div>
+                    <span style="font-size:11.5px;font-weight:800;color:var(--accent)">→</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ m.isText }}" hint-placeholder-val="{{ true }}"><div style="{{ m.style }}">{{ m.text }}</div></sc-if>
+              </sc-for>
+            </div>
+            <div style="display:flex;gap:8px;padding:8px 14px 4px 14px;overflow-x:auto">
+              <sc-for list="{{ bQuick }}" as="q" hint-placeholder-count="3"><span onClick="{{ q.send }}" style="flex:0 0 auto;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:7px 13px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap" style-hover="border-color:var(--accent)">{{ q.text }}</span></sc-for>
+            </div>
+            <div style="display:flex;gap:10px;padding:12px 14px 14px 14px">
+              <button style="width:42px;height:42px;flex:0 0 42px;border-radius:99px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:16px;cursor:pointer" style-hover="border-color:var(--accent)">+</button>
+              <input value="{{ bMsgInput }}" onChange="{{ setBMsgInput }}" onKeyDown="{{ bMsgKey }}" placeholder="Написати повідомлення…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:11px 16px;font-size:13px;font-weight:600;color:var(--text);outline:none;min-width:0">
+              <button onClick="{{ sendBMsg }}" style="background:var(--accent);color:#fff;border:none;border-radius:99px;width:42px;flex:0 0 42px;font-size:15px;cursor:pointer">↑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isNotifs }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Сповіщення" style="max-width:680px;margin:0 auto;padding:0 16px 110px 16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:16px 0">
+          <div onClick="{{ navFeed }}" style="width:40px;height:40px;border-radius:99px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer">←</div>
+          <h1 style="margin:0;font-size:20px;font-weight:800">Сповіщення</h1>
+          <span onClick="{{ markAllRead }}" style="margin-left:auto;font-size:12.5px;font-weight:800;color:var(--accent);cursor:pointer">Прочитати всі</span>
+        </div>
+        <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px">
+          <sc-for list="{{ notifChips }}" as="f" hint-placeholder-count="5"><span onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.name }}</span></sc-for>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <sc-for list="{{ notifCards }}" as="n" hint-placeholder-count="6">
+            <div onClick="{{ n.read }}" style="{{ n.style }}" style-hover="border-color:var(--accent)">
+              <span style="{{ n.iconStyle }}">{{ n.icon }}</span>
+              <div style="flex:1;min-width:0">
+                <div style="font-size:13.5px;font-weight:800">{{ n.title }}</div>
+                <div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;line-height:1.4">{{ n.meta }}</div>
+              </div>
+              <sc-if value="{{ n.action }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ n.act }}" style="background:var(--accent2);color:#111;border:none;border-radius:10px;padding:8px 14px;font-size:11.5px;font-weight:800;cursor:pointer;flex:0 0 auto" style-hover="filter:brightness(1.05)">{{ n.action }}</button>
+              </sc-if>
+              <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width:9px;height:9px;border-radius:99px;background:var(--accent);flex:0 0 9px"></span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <sc-if value="{{ showRightPanel }}" hint-placeholder-val="{{ false }}">
+    <aside style="width:300px;flex:0 0 300px;position:sticky;top:0;height:100vh;overflow-y:auto;padding:22px 18px;border-left:1px solid var(--border);display:flex;flex-direction:column;gap:18px">
+      <div style="background:linear-gradient(135deg,var(--accent),#173FA8);border-radius:var(--r);padding:18px;color:#fff">
+        <div style="font-size:11px;font-weight:800;letter-spacing:.08em;opacity:.75">TREETEX LIVE</div>
+        <div style="font-size:16px;font-weight:800;line-height:1.35;margin-top:6px">Знижки до −40% лише під час ефіру</div>
+        <button onClick="{{ openLive }}" style="margin-top:12px;background:var(--accent2);color:#111;border:none;border-radius:10px;padding:9px 16px;font-size:12.5px;font-weight:800;cursor:pointer">Дивитися ефір</button>
+      </div>
+      <div>
+        <div style="font-size:14px;font-weight:800;margin-bottom:10px">Топ магазини</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-for list="{{ topShops }}" as="s" hint-placeholder-count="4">
+            <div onClick="{{ openShop }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;cursor:pointer" style-hover="background:var(--surface)">
+              <img src="{{ s.img }}" alt="{{ s.name }}" style="width:38px;height:38px;border-radius:12px;object-fit:cover">
+              <div style="flex:1"><div style="font-size:13px;font-weight:800">{{ s.name }}</div><div style="font-size:11px;color:var(--muted);font-weight:600">{{ s.meta }}</div></div>
+              <span style="color:var(--accent);font-size:12px;font-weight:800">✓</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </aside>
+  </sc-if>
+
+  <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+    <nav style="position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;align-items:center;justify-content:space-around;background:var(--surface);border-top:1px solid var(--border);padding:8px 4px calc(8px + env(safe-area-inset-bottom)) 4px;backdrop-filter:blur(14px)">
+      <sc-for list="{{ bottomNav }}" as="b" hint-placeholder-count="5">
+        <div onClick="{{ b.go }}" style="{{ b.style }}">
+          <span style="font-size:19px;line-height:1">{{ b.icon }}</span>
+          <span style="font-size:10px;font-weight:700">{{ b.label }}</span>
+          <sc-if value="{{ b.badge }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:-2px;right:6px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;border-radius:99px;padding:1px 5px">{{ b.badge }}</span></sc-if>
+        </div>
+      </sc-for>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{ isVideo }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Відео (TikTok-стиль)" style="position:fixed;inset:0;z-index:50;background:#000;display:flex;align-items:center;justify-content:center;animation:fadeIn .25s">
+      <div style="{{ videoFrame }}">
+        <img src="{{ vd.img }}" alt="відео" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.45) 0%,rgba(0,0,0,0) 22%,rgba(0,0,0,0) 55%,rgba(0,0,0,.8) 100%)"></div>
+        <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:16px">
+          <div onClick="{{ goBack }}" style="width:38px;height:38px;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px)">←</div>
+          <span style="color:#fff;font-size:14px;font-weight:800">Для вас</span>
+          <span style="color:rgba(255,255,255,.55);font-size:14px;font-weight:700">Підписки</span>
+          <span style="margin-left:auto;color:#fff;font-size:12px;font-weight:700;background:rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;backdrop-filter:blur(8px)">{{ vd.counter }}</span>
+        </div>
+        <div style="position:absolute;right:10px;bottom:120px;display:flex;flex-direction:column;gap:18px;align-items:center">
+          <div onClick="{{ vd.toggleLike }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <span style="{{ vd.likeStyle }}">♥</span><span style="color:#fff;font-size:11px;font-weight:800">{{ vd.likesFmt }}</span>
+          </div>
+          <div onClick="{{ openComments }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <span style="width:46px;height:46px;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;font-size:19px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)">💬</span><span style="color:#fff;font-size:11px;font-weight:800">{{ vd.commentsN }}</span>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <span style="width:46px;height:46px;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;font-size:17px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px)">↗</span><span style="color:#fff;font-size:11px;font-weight:800">Поділитись</span>
+          </div>
+          <div onClick="{{ vd.fav }}" style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <span style="{{ vd.favStyle }}">⚑</span><span style="color:#fff;font-size:11px;font-weight:800">Зберегти</span>
+          </div>
+        </div>
+        <div style="position:absolute;left:14px;right:76px;bottom:18px;color:#fff">
+          <div style="display:flex;align-items:center;gap:9px">
+            <img src="{{ vd.avatar }}" alt="{{ vd.author }}" style="width:38px;height:38px;border-radius:99px;object-fit:cover;border:2px solid #fff">
+            <span style="font-size:14px;font-weight:800">{{ vd.author }}</span>
+            <button onClick="{{ toggleFollow }}" style="{{ vd.subStyle }}">{{ followLabel }}</button>
+          </div>
+          <div style="font-size:13px;font-weight:600;line-height:1.45;margin-top:8px;opacity:.95">{{ vd.caption }}</div>
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:9px 12px;margin-top:10px;backdrop-filter:blur(10px)">
+            <img src="{{ vd.pimg }}" alt="{{ vd.pname }}" style="width:42px;height:42px;border-radius:10px;object-fit:cover">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ vd.pname }}</div>
+              <div style="font-size:14px;font-weight:800;color:var(--accent2)">{{ vd.pprice }}</div>
+            </div>
+            <button onClick="{{ vd.buy }}" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:800;cursor:pointer;flex:0 0 auto" style-hover="filter:brightness(1.12)">Купити</button>
+          </div>
+        </div>
+        <div onClick="{{ prevVideo }}" style="position:absolute;left:0;top:80px;bottom:200px;width:34%;cursor:pointer"></div>
+        <div onClick="{{ nextVideo }}" style="position:absolute;right:70px;top:80px;bottom:200px;width:34%;cursor:pointer"></div>
+      </div>
+      <sc-if value="{{ commentsOpen }}" hint-placeholder-val="{{ false }}">
+        <div onClick="{{ closeComments }}" style="position:absolute;inset:0;background:rgba(0,0,0,.35)"></div>
+        <div style="{{ sheetStyle }}">
+          <div style="width:40px;height:4px;border-radius:4px;background:var(--border);margin:0 auto 14px auto"></div>
+          <div style="font-size:15px;font-weight:800;margin-bottom:14px">Коментарі · {{ vd.commentsN }}</div>
+          <div style="display:flex;flex-direction:column;gap:14px;overflow-y:auto;flex:1">
+            <sc-for list="{{ commentCards }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex;gap:10px">
+                <img src="{{ c.img }}" alt="{{ c.name }}" style="width:34px;height:34px;border-radius:99px;object-fit:cover">
+                <div><div style="font-size:12px;font-weight:800;color:var(--muted)">{{ c.name }}</div><div style="font-size:13.5px;font-weight:600;line-height:1.4;margin-top:2px">{{ c.text }}</div><div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:4px">{{ c.time }} · Відповісти</div></div>
+                <span style="margin-left:auto;color:var(--muted);font-size:12px;font-weight:700">♥ {{ c.likes }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:10px;padding-top:12px;border-top:1px solid var(--border)">
+            <input placeholder="Додати коментар…" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:11px 16px;font-size:13px;font-weight:600;color:var(--text);outline:none">
+            <button style="background:var(--accent);color:#fff;border:none;border-radius:99px;width:42px;font-size:15px;font-weight:800;cursor:pointer">↑</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isLive }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="Live Shopping" style="position:fixed;inset:0;z-index:50;background:#000;display:flex;animation:fadeIn .25s">
+      <div style="flex:1;position:relative;min-width:0">
+        <img src="{{ live.img }}" alt="ефір" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,0) 25%,rgba(0,0,0,0) 50%,rgba(0,0,0,.85) 100%)"></div>
+        <div style="position:absolute;top:0;left:0;right:0;display:flex;align-items:center;gap:10px;padding:14px 16px">
+          <div onClick="{{ goBack }}" style="width:38px;height:38px;border-radius:99px;background:rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px)">✕</div>
+          <img src="{{ live.hostImg }}" alt="{{ live.host }}" style="width:38px;height:38px;border-radius:99px;object-fit:cover;border:2px solid var(--danger)">
+          <div style="color:#fff;min-width:0">
+            <div style="font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ live.host }}</div>
+            <div style="font-size:11px;font-weight:600;opacity:.8">{{ live.viewersFmt }} глядачів</div>
+          </div>
+          <span style="background:var(--danger);color:#fff;font-size:11px;font-weight:800;border-radius:8px;padding:4px 9px;animation:pulse 2s infinite">LIVE</span>
+          <button onClick="{{ toggleFollow }}" style="{{ liveSubStyle }}">{{ followLabel }}</button>
+        </div>
+        <div style="position:absolute;left:14px;bottom:14px;right:14px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow:hidden;justify-content:flex-end">
+            <sc-for list="{{ chatMsgs }}" as="m" hint-placeholder-count="5">
+              <div style="align-self:flex-start;max-width:85%;background:rgba(0,0,0,.45);border-radius:12px;padding:6px 11px;color:#fff;font-size:12.5px;font-weight:600;backdrop-filter:blur(6px);animation:slideUp .3s"><b style="color:var(--accent2)">{{ m.name }}</b> {{ m.text }}</div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px">
+            <input value="{{ chatInput }}" onChange="{{ setChatInput }}" onKeyDown="{{ chatKey }}" placeholder="Написати в чат…" style="flex:1;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.2);border-radius:99px;padding:11px 16px;font-size:13px;font-weight:600;color:#fff;outline:none;backdrop-filter:blur(8px)">
+            <button onClick="{{ sendChat }}" style="background:var(--accent);color:#fff;border:none;border-radius:99px;width:44px;height:44px;font-size:16px;cursor:pointer">↑</button>
+            <button onClick="{{ openGifts }}" style="background:linear-gradient(135deg,var(--accent2),#FFAA00);color:#111;border:none;border-radius:99px;width:44px;height:44px;font-size:18px;cursor:pointer;flex:0 0 44px" style-hover="filter:brightness(1.08)">🎁</button>
+            <button onClick="{{ sendHeart }}" style="background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:99px;width:44px;height:44px;font-size:16px;cursor:pointer;backdrop-filter:blur(8px);flex:0 0 44px">♥</button>
+          </div>
+        </div>
+        <sc-if value="{{ pinnedVisible }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;right:14px;top:70px;width:190px;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18);border-radius:16px;padding:10px;color:#fff;backdrop-filter:blur(12px)">
+            <div style="font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--accent2);margin-bottom:7px">ЗАРАЗ У ЕФІРІ · −30%</div>
+            <img src="{{ pinned.img }}" alt="{{ pinned.name }}" style="width:100%;height:100px;border-radius:10px;object-fit:cover">
+            <div style="font-size:12px;font-weight:700;margin-top:8px;line-height:1.3">{{ pinned.name }}</div>
+            <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+              <span style="font-size:15px;font-weight:800;color:var(--accent2)">{{ pinned.priceFmt }}</span>
+              <span style="font-size:11px;opacity:.6;text-decoration:line-through">{{ pinned.oldFmt }}</span>
+            </div>
+            <div style="font-size:10.5px;font-weight:700;color:var(--danger);margin-top:3px">Залишилось {{ pinned.stock }} шт</div>
+            <button onClick="{{ pinned.buy }}" style="width:100%;margin-top:8px;background:var(--accent);color:#fff;border:none;border-radius:10px;padding:9px 0;font-size:12px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">У кошик</button>
+          </div>
+        </sc-if>
+        <div style="position:absolute;left:18px;bottom:230px;display:flex;flex-direction:column;gap:10px;pointer-events:none;z-index:4">
+          <sc-for list="{{ giftFx }}" as="g" hint-placeholder-count="0">
+            <div style="display:flex;align-items:center;gap:10px;animation:giftFloat 2.6s ease-out forwards">
+              <span style="font-size:44px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5))">{{ g.icon }}</span>
+              <div style="background:rgba(0,0,0,.55);border-radius:12px;padding:7px 12px;color:#fff;backdrop-filter:blur(6px)">
+                <div style="font-size:12px;font-weight:800">{{ g.sender }}</div>
+                <div style="font-size:11px;font-weight:700;color:var(--accent2)">надсилає {{ g.name }} ×{{ g.combo }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ giftPanelOpen }}" hint-placeholder-val="{{ false }}">
+          <div onClick="{{ closeGifts }}" style="position:absolute;inset:0;background:rgba(0,0,0,.35);z-index:5"></div>
+          <div style="position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--surface);color:var(--text);border-radius:22px 22px 0 0;padding:16px 18px 20px 18px;animation:slideUp .28s">
+            <div style="width:40px;height:4px;border-radius:4px;background:var(--border);margin:0 auto 12px auto"></div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <div style="font-size:15px;font-weight:800">Подарунки</div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:7px 13px">
+                <span style="font-size:14px">🪙</span><span style="font-size:13.5px;font-weight:800">{{ coinsFmt }}</span>
+              </div>
+              <button onClick="{{ topUp }}" style="background:var(--accent);color:#fff;border:none;border-radius:99px;padding:9px 15px;font-size:12px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Поповнити</button>
+            </div>
+            <div style="{{ giftGrid }}">
+              <sc-for list="{{ gifts }}" as="g" hint-placeholder-count="6">
+                <div onClick="{{ g.send }}" style="{{ g.style }}" style-hover="border-color:var(--accent2);transform:translateY(-2px)">
+                  <span style="{{ g.iconStyle }}">{{ g.icon }}</span>
+                  <span style="font-size:11.5px;font-weight:800">{{ g.name }}</span>
+                  <span style="font-size:11px;font-weight:800;color:var(--accent2)">🪙 {{ g.price }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:12px;text-align:center">Подарунки підтримують продавця · 70% вартості отримує автор ефіру</div>
+          </div>
+        </sc-if>
+      </div>
+      <sc-if value="{{ liveDesktopPanel }}" hint-placeholder-val="{{ false }}">
+        <div style="width:340px;flex:0 0 340px;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;color:var(--text)">
+          <div style="padding:18px 18px 10px 18px;font-size:15px;font-weight:800">Товари в ефірі · {{ liveCount }}</div>
+          <div style="flex:1;overflow-y:auto;padding:0 14px 14px 14px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ liveProducts }}" as="lp" hint-placeholder-count="3">
+              <div style="display:flex;gap:12px;background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:10px">
+                <img src="{{ lp.img }}" alt="{{ lp.name }}" style="width:64px;height:76px;border-radius:10px;object-fit:cover">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+                  <div style="font-size:12.5px;font-weight:700;line-height:1.3">{{ lp.name }}</div>
+                  <div style="display:flex;align-items:baseline;gap:6px;margin-top:4px">
+                    <span style="font-size:14px;font-weight:800">{{ lp.priceFmt }}</span>
+                    <span style="font-size:11px;color:var(--muted);text-decoration:line-through">{{ lp.oldFmt }}</span>
+                    <span style="background:var(--danger);color:#fff;font-size:10px;font-weight:800;border-radius:6px;padding:1px 5px">−30%</span>
+                  </div>
+                  <div style="font-size:10.5px;font-weight:700;color:var(--danger);margin-top:2px">Залишилось {{ lp.stock }} шт</div>
+                  <button onClick="{{ lp.buy }}" style="margin-top:auto;background:var(--accent);color:#fff;border:none;border-radius:9px;padding:7px 0;font-size:11.5px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">У кошик</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <div onClick="{{ navCart }}" style="margin:0 14px 14px 14px;background:var(--accent2);color:#111;border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;cursor:pointer" style-hover="filter:brightness(1.05)">
+            <span style="font-size:13.5px;font-weight:800">Кошик · {{ cartCount }}</span>
+            <span style="font-size:15px;font-weight:800">{{ subtotalFmt }}</span>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:80;background:var(--text);color:var(--bg);border-radius:99px;padding:12px 22px;font-size:13.5px;font-weight:800;box-shadow:var(--shadow);animation:slideUp .25s;white-space:nowrap">{{ toastMsg }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2E6BFF&quot;,&quot;options&quot;:[&quot;#2E6BFF&quot;,&quot;#0F62FE&quot;,&quot;#7C4DFF&quot;,&quot;#0BA37F&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Бренд&quot;},&quot;radius&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:18,&quot;min&quot;:8,&quot;max&quot;:26,&quot;step&quot;:1,&quot;unit&quot;:&quot;px&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Бренд&quot;}}">
+class Component extends DCLogic {
+  state = {
+    width: 1400, theme: 'dark', screen: 'feed', prevScreen: 'feed',
+    cart: [{id:1,qty:1},{id:5,qty:1}], favs: [2], following: false,
+    promoInput: '', promoApplied: false, promoMsg: '',
+    query: '', activeFilters: [], activeCat: 'Все',
+    productId: 1, thumbIdx: 0, selColor: 0, selSize: 1,
+    videoIdx: 0, likes: {}, commentsOpen: false,
+    chat: [], chatInput: '',
+    checkoutStep: 1, co: {name:'',phone:'',city:'',addr:'',delivery:'nova',pay:'card'}, coError: '', orderNo: '',
+    shopTab: 0, toast: null,
+    coins: 500, giftPanelOpen: false, giftFx: [],
+    bThread: 0, bMsgInput: '',
+    bMsgs: {
+      0:[{me:0,text:'Вітаю! Ваше замовлення TX-284913 передано в Нову пошту, ТТН 2045 0092 1183.'},{me:1,text:'Дякую! А можна змінити відділення на №42?'},{me:0,text:'Так, змінив на відділення №42, Київ. Посилка буде завтра до 14:00.'},{me:0,product:1},{me:0,text:'До речі, до навушників радимо чохол — сьогодні на нього −20% в ефірі.'}],
+      1:[{me:0,text:'Сьогодні о 19:00 великий ефір зі знижками до −40% на догляд. Приходьте!'},{me:1,text:'Буду! Відкладіть, будь ласка, сироватку з вітаміном C.'},{me:0,product:4}],
+      2:[{me:1,text:'Добрий день! Худі Oversize — це унісекс модель? Який розмір на зріст 175?'},{me:0,text:'Вітаю! Так, унісекс. На 175 см радимо M — посадка вільна.'}]
+    },
+    notifFilter: 'Всі',
+    notifs: [
+      {id:1,type:'Замовлення',icon:'🛍',title:'Замовлення відправлено',meta:'TX-284913 · Нова пошта, відділення №42 · буде завтра до 14:00',time:'5 хв тому',unread:true,action:null},
+      {id:2,type:'Ефіри',icon:'●',title:'GlowUp Beauty розпочала ефір',meta:'Розпродаж косметики — знижки до −40% · 2,3K глядачів',time:'12 хв тому',unread:true,action:'Дивитись'},
+      {id:3,type:'Акції',icon:'%',title:'Ціна знизилась на товар з обраного',meta:'Кросівки Urban Flow White: 3 890 ₴ → 3 490 ₴',time:'1 год тому',unread:true,action:'До товару'},
+      {id:4,type:'Соціальні',icon:'♥',title:'Ваш відгук вподобали 24 людини',meta:'Відгук про AirSound Pro · «Дуже задоволена!»',time:'3 год тому',unread:false,action:null},
+      {id:5,type:'Замовлення',icon:'✓',title:'Нараховано 64 бонуси',meta:'За відгук з фото · бонуси діють 90 днів',time:'вчора',unread:false,action:null},
+      {id:6,type:'Соціальні',icon:'+',title:'StyleWay відповів на ваш коментар',meta:'«Так, унісекс. На 175 см радимо M…»',time:'вчора',unread:false,action:null},
+      {id:7,type:'Ефіри',icon:'◷',title:'Нагадування: ефір TechnoHub о 19:00',meta:'Гаджети тижня · знижка ефіру −30%',time:'вчора',unread:false,action:null}
+    ]
+  };
+
+  P = [
+    {id:1,name:'Бездротові навушники AirSound Pro',price:2499,old:3199,seed:'earbudsx',rating:4.8,reviews:1243,badge:'−22%',cat:'Електроніка',stock:14,seller:'TechnoHub'},
+    {id:2,name:'Кросівки Urban Flow White',price:3890,old:0,seed:'sneakerx',rating:4.9,reviews:867,badge:'Новинка',cat:'Мода',stock:8,seller:'StyleWay'},
+    {id:3,name:'Смарт-годинник Pulse X2',price:5490,old:6990,seed:'watchx',rating:4.7,reviews:2109,badge:'−21%',cat:'Електроніка',stock:23,seller:'TechnoHub'},
+    {id:4,name:'Сироватка з вітаміном C 30 мл',price:649,old:0,seed:'serumx',rating:4.9,reviews:3312,badge:'Хіт',cat:'Краса',stock:56,seller:'GlowUp'},
+    {id:5,name:'Худі Oversize Basic Graphite',price:1290,old:1590,seed:'hoodiex',rating:4.6,reviews:534,badge:'−19%',cat:'Мода',stock:31,seller:'StyleWay'},
+    {id:6,name:'Портативна колонка BoomGo 20W',price:1990,old:0,seed:'speakerx',rating:4.5,reviews:412,badge:'',cat:'Електроніка',stock:19,seller:'TechnoHub'},
+    {id:7,name:'Рюкзак City Pack 25L',price:1750,old:0,seed:'backpackx',rating:4.8,reviews:698,badge:'',cat:'Мода',stock:12,seller:'StyleWay'},
+    {id:8,name:'Кавоварка Aroma One',price:4290,old:5190,seed:'coffeex',rating:4.7,reviews:301,badge:'−17%',cat:'Дім',stock:6,seller:'HomeLab'},
+    {id:9,name:'Окуляри Retro Wave',price:890,old:0,seed:'glassesx',rating:4.4,reviews:189,badge:'',cat:'Мода',stock:44,seller:'StyleWay'},
+    {id:10,name:'Йога-мат EcoGrip 6 мм',price:720,old:0,seed:'yogax',rating:4.8,reviews:955,badge:'Хіт',cat:'Спорт',stock:27,seller:'HomeLab'}
+  ];
+  V = [
+    {author:'@style.way',av:12,caption:'Худі Oversize — розбираємо якість пошиття та посадку на різні зрости. Тканина щільна, 380 г/м².',likes:12400,comments:342,pid:5,seed:'vidhoodie'},
+    {author:'@technohub',av:33,caption:'Тест AirSound Pro у метро: активне шумозаглушення проти гулу поїзда. Результат вражає.',likes:45100,comments:1204,pid:1,seed:'videarbuds'},
+    {author:'@glowup.ua',av:45,caption:'Ранкова рутина за 5 хвилин: сироватка з вітаміном C до SPF — розказую чому саме так.',likes:8900,comments:276,pid:4,seed:'vidserum'}
+  ];
+  CHAT_POOL = [
+    ['Марія','А є розмір М у наявності?'],['dima_ua','Взяв дві штуки, дякую за знижку!'],['Оля К.','Скільки триває доставка до Львова?'],
+    ['vlad.web','Найкращий ефір цього тижня'],['Ірина','Покажіть ближче, будь ласка'],['maxx','Промокод ще діє?'],
+    ['Соломія','Замовила! Чекаю на посилку'],['andrii.k','А буде ще завтра ефір?']
+  ];
+  COMMENTS = [
+    {name:'olena.kv',text:'Вже замовила після цього відео, якість топ!',time:'2 год',likes:214,img:5},
+    {name:'max_ua',text:'Яка ціна з доставкою до Харкова?',time:'3 год',likes:48,img:14},
+    {name:'iryna.s',text:'Носила місяць — жодних нарікань, рекомендую',time:'5 год',likes:167,img:25},
+    {name:'d.kovalchuk',text:'Було б круто побачити огляд чорного кольору',time:'8 год',likes:31,img:53},
+    {name:'sofia.m',text:'Дякую за чесний огляд без реклами',time:'12 год',likes:402,img:32}
+  ];
+
+  componentDidMount() {
+    this._onR = () => this.setState({width: window.innerWidth});
+    window.addEventListener('resize', this._onR);
+    this.setState({width: window.innerWidth, chat: this.CHAT_POOL.slice(0,4).map((c,i)=>({id:i,name:c[0],text:c[1]}))});
+    this._int = setInterval(() => {
+      if (this.state.screen !== 'live') return;
+      const c = this.CHAT_POOL[Math.floor(Math.random()*this.CHAT_POOL.length)];
+      this.setState(s => ({chat: [...s.chat, {id:Date.now(),name:c[0],text:c[1]}].slice(-9)}));
+    }, 3200);
+    this.syncProps();
+  }
+  componentDidUpdate() { this.syncProps(); }
+  componentWillUnmount() { window.removeEventListener('resize', this._onR); clearInterval(this._int); }
+
+  syncProps() {
+    const r = document.documentElement;
+    if (this.props.accent) r.style.setProperty('--accent', this.props.accent);
+    if (this.props.radius) r.style.setProperty('--r', this.props.radius + 'px');
+    r.dataset.theme = this.state.theme;
+  }
+
+  fmt(n) { return n.toLocaleString('uk-UA').replace(/,/g,' ') + ' ₴'; }
+  fmtK(n) { return n >= 1000 ? (n/1000).toFixed(1).replace('.0','') + 'K' : '' + n; }
+  img(seed, w, h) { return `https://picsum.photos/seed/${seed}/${w}/${h}`; }
+  ava(n) { return `https://i.pravatar.cc/100?img=${n}`; }
+  go(screen) { this.setState(s => ({prevScreen: s.screen, screen, commentsOpen: false})); }
+  toast(msg) {
+    clearTimeout(this._tt);
+    this.setState({toast: msg});
+    this._tt = setTimeout(() => this.setState({toast: null}), 2200);
+  }
+  addCart(id) {
+    this.setState(s => {
+      const ex = s.cart.find(c => c.id === id);
+      return {cart: ex ? s.cart.map(c => c.id===id ? {...c,qty:c.qty+1} : c) : [...s.cart, {id, qty:1}]};
+    });
+    this.toast('Додано в кошик ✓');
+  }
+
+  renderVals() {
+    const s = this.state, P = this.P;
+    const isMobile = s.width < 820, isDesktop = !isMobile;
+    const isWide = s.width >= 1280;
+    const cartCount = s.cart.reduce((a,c) => a+c.qty, 0);
+    const scr = n => s.screen === n;
+    const byId = id => P.find(p => p.id === id);
+
+    const cardVM = p => ({
+      ...p, img: this.img(p.seed,480,600),
+      priceFmt: this.fmt(p.price), oldFmt: p.old ? this.fmt(p.old) : null,
+      category: p.cat,
+      open: () => this.setState({productId:p.id, thumbIdx:0, prevScreen:s.screen, screen:'product'}),
+      add: e => { e.stopPropagation(); this.addCart(p.id); },
+      fav: e => { e.stopPropagation(); this.setState(st => ({favs: st.favs.includes(p.id) ? st.favs.filter(f=>f!==p.id) : [...st.favs,p.id]})); },
+      favStyle: {position:'absolute',top:'10px',right:'10px',width:'34px',height:'34px',borderRadius:'99px',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:'15px',backdropFilter:'blur(8px)',background:'rgba(0,0,0,.4)',color: s.favs.includes(p.id) ? '#FF3B5C' : '#fff'}
+    });
+
+    // feed
+    const feedCards = P.map(cardVM);
+    const stories = [['GlowUp',45],['TechnoHub',33],['StyleWay',12],['HomeLab',60],['modno.ua',24],['kyiv.finds',15],['sport.pro',8]].map(x => ({name:x[0], img:this.ava(x[1])}));
+    const lives = [
+      {title:'Розпродаж косметики — знижки до 40%',host:'GlowUp Beauty',viewers:'2,3K',seed:'livebeauty'},
+      {title:'Нові кросівки сезону: примірка наживо',host:'StyleWay',viewers:'1,1K',seed:'livesneak'},
+      {title:'Гаджети тижня: тестуємо в ефірі',host:'TechnoHub',viewers:'876',seed:'livetech'}
+    ];
+    const liveCards = lives.map(l => ({...l, img:this.img(l.seed,420,560), open: () => this.go('live')}));
+    const cats = ['Все','Електроніка','Мода','Краса','Дім','Спорт','Дитяче','Авто'];
+    const chip = act => ({flex:'0 0 auto',padding:'9px 16px',borderRadius:'99px',fontSize:'13px',fontWeight:'700',cursor:'pointer',whiteSpace:'nowrap',border:'1px solid ' + (act?'var(--accent)':'var(--border)'),background:act?'var(--accent)':'var(--surface)',color:act?'#fff':'var(--text)'});
+    const categories = cats.map(c => ({name:c, style: chip(s.activeCat===c), go: () => this.setState({activeCat:c})}));
+
+    // nav
+    const unreadNotifs = s.notifs.filter(n => n.unread).length;
+    const navDef = [['feed','Головна'],['search','Каталог'],['video','Відео'],['live','Live ефіри'],['chat','Чат'],['notifs','Сповіщення'],['cart','Кошик'],['profile','Профіль']];
+    const navBadges = {cart: cartCount ? String(cartCount) : null, notifs: unreadNotifs ? String(unreadNotifs) : null, chat: '1'};
+    const navItems = navDef.map(n => ({
+      label: n[1], go: () => this.go(n[0]),
+      badge: navBadges[n[0]] || null,
+      style: {display:'flex',alignItems:'center',gap:'10px',padding:'12px 14px',borderRadius:'14px',cursor:'pointer',background: scr(n[0])?'var(--surface2)':'transparent',color: scr(n[0])?'var(--text)':'var(--muted)',borderLeft: scr(n[0])?'3px solid var(--accent)':'3px solid transparent'}
+    }));
+    const bIcons = {feed:'⌂',search:'⌕',video:'▶',cart:'🛍',profile:'●'};
+    const bottomNav = [['feed','Головна'],['search','Каталог'],['video','Відео'],['cart','Кошик'],['profile','Профіль']].map(n => ({
+      label:n[1], icon:bIcons[n[0]], go:() => this.go(n[0]),
+      badge: n[0]==='cart' && cartCount ? String(cartCount) : null,
+      style:{position:'relative',display:'flex',flexDirection:'column',alignItems:'center',gap:'3px',cursor:'pointer',padding:'4px 10px',color: scr(n[0])?'var(--accent)':'var(--muted)'}
+    }));
+
+    // search
+    const q = s.query.toLowerCase();
+    let results = P.filter(p => !q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q));
+    if (s.activeFilters.includes('Знижки')) results = results.filter(p => p.old);
+    if (s.activeFilters.includes('★ 4.8+')) results = results.filter(p => p.rating >= 4.8);
+    if (s.activeFilters.includes('До 2 000 ₴')) results = results.filter(p => p.price <= 2000);
+    if (s.activeFilters.includes('Новинки')) results = results.filter(p => p.badge === 'Новинка' || p.badge === 'Хіт');
+    const filterChips = ['Знижки','★ 4.8+','До 2 000 ₴','Новинки','Безкоштовна доставка','У наявності'].map(f => ({
+      name:f, style: chip(s.activeFilters.includes(f)),
+      toggle: () => this.setState(st => ({activeFilters: st.activeFilters.includes(f) ? st.activeFilters.filter(x=>x!==f) : [...st.activeFilters,f]}))
+    }));
+
+    // product
+    const p0 = byId(s.productId) || P[0];
+    const thumbs = [0,1,2,3].map(i => ({
+      img: this.img(p0.seed + (i||''), 200, 250),
+      style: {width:'64px',height:'78px',borderRadius:'12px',objectFit:'cover',cursor:'pointer',display:'block',border: s.thumbIdx===i ? '2px solid var(--accent)' : '2px solid transparent',opacity: s.thumbIdx===i?1:.65},
+    }));
+    thumbs.forEach((t,i) => t.style.cursor='pointer');
+    const thumbVMs = thumbs.map((t,i) => ({...t, }));
+    const pv = {
+      ...p0, imgBig: this.img(p0.seed + (s.thumbIdx||''), 800, 1000),
+      thumbs: thumbs.map((t,i)=>({img:t.img, style:t.style})),
+      priceFmt: this.fmt(p0.price), oldFmt: p0.old?this.fmt(p0.old):null,
+      discount: p0.old ? '−'+Math.round((1-p0.price/p0.old)*100)+'%' : '',
+      stockLabel: 'У наявності: ' + p0.stock + ' шт',
+      sellerImg: this.ava(33),
+      specs: [{k:'Бренд',v:p0.seller},{k:'Категорія',v:p0.cat},{k:'Гарантія',v:'12 місяців'},{k:'Країна',v:'Україна / імпорт'},{k:'Артикул',v:'TX-'+(1000+p0.id)}],
+      add: () => this.addCart(p0.id),
+      buyNow: () => { this.addCart(p0.id); this.go('cart'); },
+      fav: () => this.setState(st => ({favs: st.favs.includes(p0.id) ? st.favs.filter(f=>f!==p0.id) : [...st.favs,p0.id]})),
+      favBtnStyle: {width:'40px',height:'40px',borderRadius:'99px',background:'var(--surface)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',fontSize:'15px',color: s.favs.includes(p0.id)?'#FF3B5C':'var(--muted)'}
+    };
+    // clickable thumbs need handlers — rebuild with onClick via style trick not possible; use imgs wrapped: attach pick via VM
+    pv.thumbs = [0,1,2,3].map(i => ({img: this.img(p0.seed+(i||''),200,250), style:{...thumbs[i].style}, pick: () => this.setState({thumbIdx:i})}));
+    const colorNames = ['Чорний','Білий','Синій'];
+    const optChip = act => ({padding:'9px 16px',borderRadius:'12px',fontSize:'13px',fontWeight:'700',cursor:'pointer',border:'1.5px solid ' + (act?'var(--accent)':'var(--border)'),background: act?'var(--accent)':'var(--surface)',color: act?'#fff':'var(--text)'});
+    const colorOpts = colorNames.map((c,i) => ({name:c, style:optChip(s.selColor===i), pick:() => this.setState({selColor:i})}));
+    const sizeOpts = ['S','M','L','XL'].map((z,i) => ({name:z, style:optChip(s.selSize===i), pick:() => this.setState({selSize:i})}));
+    const reviewCards = [
+      {name:'Олена К.',date:'12 червня 2026',stars:'★★★★★',text:'Замовляла під час прямого ефіру зі знижкою. Доставка за день, якість повністю відповідає відео. Дуже задоволена!',img:this.ava(5)},
+      {name:'Максим Д.',date:'3 червня 2026',stars:'★★★★★',text:'Друга покупка в цього продавця. Упаковка надійна, все як в описі. Рекомендую.',img:this.ava(14)},
+      {name:'Ірина В.',date:'28 травня 2026',stars:'★★★★☆',text:'Товар хороший, але доставка зайняла три дні замість одного. В іншому — без нарікань.',img:this.ava(25)}
+    ];
+    const similarCards = P.filter(p => p.cat===p0.cat && p.id!==p0.id).concat(P.filter(p=>p.id!==p0.id)).slice(0,6).map(cardVM);
+
+    // shop
+    const shop = {name:'TechnoHub', cover:this.img('shopcover',1200,340), logo:this.ava(33), desc:'Офіційний магазин техніки та гаджетів. Пряме постачання, гарантія 12 місяців, щотижневі live-ефіри з тестами новинок і знижками для підписників.'};
+    const shopTabNames = ['Товари','Відео','Ефіри','Відгуки'];
+    const shopTabs = shopTabNames.map((t,i) => ({name:t, pick:() => this.setState({shopTab:i}), style:{padding:'11px 16px',fontSize:'13.5px',fontWeight:'800',cursor:'pointer',color: s.shopTab===i?'var(--text)':'var(--muted)',borderBottom: s.shopTab===i?'2.5px solid var(--accent)':'2.5px solid transparent'}}));
+    const shopCards = P.filter(p => p.seller==='TechnoHub').map(cardVM);
+
+    // cart
+    const cartCards = s.cart.map(c => {
+      const p = byId(c.id);
+      return {
+        name:p.name, img:this.img(p.seed,200,250), qty:c.qty,
+        variant: colorNames[s.selColor] + ' · ' + ['S','M','L','XL'][s.selSize],
+        sumFmt: this.fmt(p.price*c.qty),
+        inc: () => this.setState(st => ({cart: st.cart.map(x => x.id===c.id?{...x,qty:x.qty+1}:x)})),
+        dec: () => this.setState(st => ({cart: st.cart.map(x => x.id===c.id?{...x,qty:Math.max(1,x.qty-1)}:x)})),
+        remove: () => this.setState(st => ({cart: st.cart.filter(x => x.id!==c.id)}))
+      };
+    });
+    const subtotal = s.cart.reduce((a,c) => a + byId(c.id).price*c.qty, 0);
+    const discount = s.promoApplied ? Math.round(subtotal*0.1) : 0;
+    const delivery = subtotal - discount >= 1500 || subtotal===0 ? 0 : 60;
+    const total = subtotal - discount + delivery;
+
+    // checkout
+    const co = s.co;
+    const stepDots = [1,2,3,4].map(i => ({style:{flex:1,height:'4px',borderRadius:'4px',background: s.checkoutStep>=i?'var(--accent)':'var(--surface2)'}}));
+    const optCard = act => ({display:'flex',alignItems:'center',gap:'12px',background:'var(--surface)',border:'1.5px solid ' + (act?'var(--accent)':'var(--border)'),borderRadius:'16px',padding:'15px 16px',cursor:'pointer'});
+    const dOpts = [['nova','Нова пошта — відділення','Завтра, 8 липня','60 ₴'],['courier','Кур\'єр до дверей','Завтра, до 20:00','120 ₴'],['pickup','Пункт самовивозу TREETEX','Сьогодні, за 2 год','Безкоштовно']];
+    const deliveryOpts = dOpts.map(d => ({name:d[1], eta:d[2], price:d[3], style:optCard(co.delivery===d[0]), pick:() => this.setState(st=>({co:{...st.co,delivery:d[0]}}))}));
+    const pOpts = [['card','Карткою онлайн','Visa / Mastercard / Apple Pay'],['wallet','Гаманець TREETEX','Баланс: 1 240 ₴'],['cod','Оплата при отриманні','Комісія перевізника 20 ₴']];
+    const payOpts = pOpts.map(d => ({name:d[1], eta:d[2], style:optCard(co.pay===d[0]), pick:() => this.setState(st=>({co:{...st.co,pay:d[0]}}))}));
+    const dSel = dOpts.find(d=>d[0]===co.delivery), pSel = pOpts.find(d=>d[0]===co.pay);
+    const setCo = k => e => this.setState(st => ({co:{...st.co,[k]:e.target.value}, coError:''}));
+
+    // video
+    const v = this.V[s.videoIdx], vp = byId(v.pid);
+    const liked = !!s.likes[s.videoIdx];
+    const vd = {
+      img: this.img(v.seed, 720, 1280), author: v.author, caption: v.caption,
+      avatar: this.ava(v.av), counter: (s.videoIdx+1) + ' / ' + this.V.length,
+      likesFmt: this.fmtK(v.likes + (liked?1:0)), commentsN: this.fmtK(v.comments),
+      pimg: this.img(vp.seed,160,160), pname: vp.name, pprice: this.fmt(vp.price),
+      buy: () => this.addCart(vp.id),
+      toggleLike: () => this.setState(st => ({likes:{...st.likes,[s.videoIdx]:!st.likes[s.videoIdx]}})),
+      likeStyle: {width:'46px',height:'46px',borderRadius:'99px',fontSize:'21px',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',background: liked?'var(--danger)':'rgba(255,255,255,.15)',color:'#fff',transition:'transform .15s',transform: liked?'scale(1.1)':'scale(1)'},
+      fav: () => this.toast('Збережено в обране ✓'),
+      favStyle: {width:'46px',height:'46px',borderRadius:'99px',fontSize:'18px',display:'flex',alignItems:'center',justifyContent:'center',backdropFilter:'blur(8px)',background:'rgba(255,255,255,.15)',color:'#fff'},
+      subStyle: {background: s.following?'rgba(255,255,255,.2)':'var(--accent)',color:'#fff',border:'none',borderRadius:'9px',padding:'6px 13px',fontSize:'12px',fontWeight:'800',cursor:'pointer'}
+    };
+    const commentCards = this.COMMENTS.map(c => ({...c, img:this.ava(c.img)}));
+
+    // live
+    const liveProductsSrc = [byId(1), byId(3), byId(6), byId(4)];
+    const lpVM = p => ({
+      name:p.name, img:this.img(p.seed,200,250), stock:p.stock,
+      priceFmt: this.fmt(Math.round(p.price*0.7)), oldFmt: this.fmt(p.price),
+      buy: () => this.addCart(p.id)
+    });
+    const liveProducts = liveProductsSrc.map(lpVM);
+    const pinned = lpVM(byId(3));
+    const live = {img:this.img('livebeauty',900,1400), host:'GlowUp Beauty · Розпродаж', hostImg:this.ava(45), viewersFmt:'2 314'};
+
+    const orders = [
+      {no:'TX-284913',date:'вчора',sum:this.fmt(2499),status:'В дорозі',img:this.img('earbudsx',100,100),style:{background:'var(--accent)',color:'#fff',fontSize:'11px',fontWeight:'800',borderRadius:'8px',padding:'4px 10px'}},
+      {no:'TX-281406',date:'28 червня',sum:this.fmt(1290),status:'Доставлено',img:this.img('hoodiex',100,100),style:{background:'var(--success)',color:'#fff',fontSize:'11px',fontWeight:'800',borderRadius:'8px',padding:'4px 10px'}},
+      {no:'TX-279552',date:'14 червня',sum:this.fmt(649),status:'Доставлено',img:this.img('serumx',100,100),style:{background:'var(--success)',color:'#fff',fontSize:'11px',fontWeight:'800',borderRadius:'8px',padding:'4px 10px'}}
+    ];
+    const profileMenu = [['Обране','feed'],['Переглянуті товари','feed'],['Мої підписки','shop'],['Повідомлення','chat'],['Сповіщення','notifs'],['Повернення та обміни','feed'],['Налаштування і безпека','feed']].map(m => ({name:m[0], go:() => this.go(m[1])}));
+
+    // buyer chat
+    const bThreadDefs = [['TechnoHub',33],['GlowUp Beauty',45],['StyleWay',12]];
+    const bLasts = ['До навушників радимо чохол — сьогодні −20%','Відклали сироватку для вас','На 175 см радимо M — посадка вільна'];
+    const bThreads = bThreadDefs.map((t,i) => ({
+      name:t[0], img:this.ava(t[1]), last:bLasts[i], unread: i===1 && s.bThread!==1 ? '1' : null,
+      pick: () => this.setState({bThread:i}),
+      style:{display:'flex',alignItems:'center',gap:'11px',padding:'13px 15px',borderBottom:'1px solid var(--border)',cursor:'pointer',background: s.bThread===i?'var(--surface2)':'transparent'}
+    }));
+    const bMsgCards = (s.bMsgs[s.bThread]||[]).map(m => {
+      if (m.product) {
+        const bp = byId(m.product);
+        return {isProduct:true, isText:false, pimg:this.img(bp.seed,100,120), ptitle:bp.name, pprice:this.fmt(bp.price),
+          open: () => this.setState({productId:bp.id, thumbIdx:0, prevScreen:'chat', screen:'product'}),
+          cardStyle:{display:'flex',alignItems:'center',gap:'11px',alignSelf:'flex-start',maxWidth:'78%',background:'var(--surface2)',border:'1px solid var(--border)',borderRadius:'14px',padding:'10px 12px',cursor:'pointer'}};
+      }
+      return {isText:true, isProduct:false, text:m.text,
+        style: m.me ? {alignSelf:'flex-end',maxWidth:'75%',background:'var(--accent)',color:'#fff',borderRadius:'16px 16px 4px 16px',padding:'10px 14px',fontSize:'13px',fontWeight:'600',lineHeight:'1.45'} : {alignSelf:'flex-start',maxWidth:'75%',background:'var(--surface2)',color:'var(--text)',borderRadius:'16px 16px 16px 4px',padding:'10px 14px',fontSize:'13px',fontWeight:'600',lineHeight:'1.45'}};
+    });
+    const sendB = t => {
+      if(!t.trim()) return;
+      this.setState(st => ({bMsgs:{...st.bMsgs,[st.bThread]:[...(st.bMsgs[st.bThread]||[]),{me:1,text:t.trim()}]}, bMsgInput:''}));
+    };
+    const bQuick = ['Де моє замовлення?','Чи є в наявності?','Дякую!'].map(q => ({text:q, send:()=>sendB(q)}));
+
+    // notifications
+    const notifTypes = ['Всі','Замовлення','Ефіри','Акції','Соціальні'];
+    const notifChips = notifTypes.map(t => ({name:t, pick:()=>this.setState({notifFilter:t}), style:chip(s.notifFilter===t)}));
+    const iconBgs = {'Замовлення':'var(--accent)','Ефіри':'var(--danger)','Акції':'var(--accent2)','Соціальні':'var(--surface2)'};
+    const notifCards = s.notifs.filter(n => s.notifFilter==='Всі'||n.type===s.notifFilter).map(n => ({
+      ...n, meta: n.meta + ' · ' + n.time,
+      iconStyle:{width:'42px',height:'42px',flex:'0 0 42px',borderRadius:'13px',background:iconBgs[n.type],color: n.type==='Акції'?'#111':(n.type==='Соціальні'?'var(--text)':'#fff'),display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',fontWeight:'800'},
+      style:{display:'flex',alignItems:'center',gap:'13px',background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'16px',padding:'13px 15px',cursor:'pointer',opacity: n.unread?1:.72},
+      read: () => this.setState(st => ({notifs: st.notifs.map(x => x.id===n.id?{...x,unread:false}:x)})),
+      act: e => { e.stopPropagation(); if(n.type==='Ефіри') this.go('live'); else this.setState({productId:2, thumbIdx:0, prevScreen:'notifs', screen:'product'}); }
+    }));
+    const topShops = [['TechnoHub','48,3K підписників',33],['GlowUp Beauty','36,1K підписників',45],['StyleWay','29,8K підписників',12],['HomeLab','17,2K підписників',60]].map(x => ({name:x[0],meta:x[1],img:this.ava(x[2])}));
+
+    const cols = s.width < 480 ? 2 : s.width < 820 ? 2 : s.width < 1100 ? 3 : 4;
+
+    return {
+      isMobile, isDesktop, isWide,
+      isFeed: scr('feed'), isSearch: scr('search'), isProduct: scr('product'), isShop: scr('shop'),
+      isCart: scr('cart'), isCheckout: scr('checkout'), isProfile: scr('profile'),
+      isVideo: scr('video'), isLive: scr('live'),
+      isChat: scr('chat'), isNotifs: scr('notifs'),
+      navNotifs: () => this.go('notifs'), openChat: () => this.go('chat'),
+      chatLayout: {display:'grid',gridTemplateColumns: isMobile?'1fr':'290px 1fr',gap:'14px',alignItems:'start'},
+      bThreads, bMsgCards, bQuick,
+      bActiveName: bThreadDefs[s.bThread][0], bActiveImg: this.ava(bThreadDefs[s.bThread][1]),
+      bMsgInput: s.bMsgInput, setBMsgInput: e => this.setState({bMsgInput: e.target.value}),
+      bMsgKey: e => { if(e.key==='Enter') sendB(this.state.bMsgInput); },
+      sendBMsg: () => sendB(this.state.bMsgInput),
+      notifChips, notifCards,
+      notifBadge: unreadNotifs ? String(unreadNotifs) : null,
+      markAllRead: () => { this.setState(st => ({notifs: st.notifs.map(x => ({...x,unread:false}))})); this.toast('Усі сповіщення прочитано'); },
+      showRightPanel: isWide && scr('feed'),
+      theme: s.theme, themeLabel: s.theme==='dark' ? 'Темна тема' : 'Світла тема',
+      themeIcon: s.theme==='dark' ? '☾' : '☀',
+      themeKnob: {position:'absolute',top:'2px',left: s.theme==='dark'?'2px':'16px',width:'14px',height:'14px',borderRadius:'99px',background:'var(--accent)',transition:'left .2s'},
+      toggleTheme: () => this.setState(st => ({theme: st.theme==='dark'?'light':'dark'})),
+      navFeed: () => this.go('feed'), navSearch: () => this.go('search'),
+      navCart: () => this.go('cart'), openLive: () => this.go('live'), openShop: () => this.go('shop'),
+      goBack: () => this.go(s.prevScreen === s.screen ? 'feed' : s.prevScreen),
+      navItems, bottomNav, stories, liveCards, categories, feedCards, topShops,
+      gridStyle: {display:'grid',gridTemplateColumns:`repeat(${cols},1fr)`,gap:'14px'},
+      // search
+      query: s.query, setQuery: e => this.setState({query: e.target.value}),
+      filterChips, searchCards: results.map(cardVM),
+      resultsLabel: 'Знайдено ' + results.length + ' товарів',
+      // product
+      pv, colorOpts, sizeOpts, reviewCards, similarCards,
+      productLayout: {display:'grid',gridTemplateColumns: isMobile?'1fr':'minmax(0,440px) 1fr',gap: isMobile?'20px':'32px',alignItems:'start'},
+      // shop
+      shop, shopTabs, shopCards,
+      followLabel: s.following ? 'Ви підписані ✓' : 'Підписатися',
+      followStyle: {flex:1,background: s.following?'var(--surface2)':'var(--accent)',color: s.following?'var(--text)':'#fff',border: s.following?'1px solid var(--border)':'none',borderRadius:'12px',padding:'12px 0',fontSize:'13.5px',fontWeight:'800',cursor:'pointer'},
+      toggleFollow: () => { this.setState(st => ({following: !st.following})); if(!s.following) this.toast('Ви підписалися ✓'); },
+      // cart
+      cartCards, cartCount, cartEmpty: s.cart.length===0, cartFull: s.cart.length>0,
+      cartCountLabel: cartCount + ' тов.',
+      subtotalFmt: this.fmt(subtotal),
+      discountFmt: discount ? this.fmt(discount) : null,
+      deliveryFmt: delivery ? this.fmt(delivery) : 'Безкоштовно',
+      totalFmt: this.fmt(total),
+      promoInput: s.promoInput, setPromo: e => this.setState({promoInput: e.target.value}),
+      promoMsg: s.promoMsg || null,
+      applyPromo: () => {
+        if (s.promoInput.trim().toUpperCase()==='TREE10') this.setState({promoApplied:true, promoMsg:'Промокод TREE10 застосовано: −10%'});
+        else this.toast('Промокод не знайдено');
+      },
+      startCheckout: () => this.setState({screen:'checkout', prevScreen:'cart', checkoutStep:1, coError:''}),
+      // checkout
+      notDone: s.checkoutStep < 5,
+      step1: s.checkoutStep===1, step2: s.checkoutStep===2, step3: s.checkoutStep===3, step4: s.checkoutStep===4, step5: s.checkoutStep===5,
+      stepDots, deliveryOpts, payOpts,
+      inputStyle: {background:'var(--surface)',border:'1px solid var(--border)',borderRadius:'14px',padding:'14px 16px',fontSize:'14px',fontWeight:'600',color:'var(--text)',outline:'none',width:'100%'},
+      coName: co.name, coPhone: co.phone, coCity: co.city, coAddr: co.addr,
+      setCoName: setCo('name'), setCoPhone: setCo('phone'), setCoCity: setCo('city'), setCoAddr: setCo('addr'),
+      coError: s.coError || null,
+      coSummary: (co.name||'—') + ', ' + (co.city||'—'),
+      deliverySummary: dSel[1] + ' · ' + dSel[2],
+      paySummary: pSel[1],
+      stepNext: () => {
+        if (s.checkoutStep===1 && (!co.name.trim() || !co.phone.trim() || !co.city.trim() || !co.addr.trim())) {
+          this.setState({coError:'Заповніть усі поля, будь ласка'}); return;
+        }
+        this.setState(st => ({checkoutStep: st.checkoutStep+1}));
+      },
+      checkoutBack: () => {
+        if (s.checkoutStep>1 && s.checkoutStep<5) this.setState(st=>({checkoutStep: st.checkoutStep-1}));
+        else this.go('cart');
+      },
+      confirmOrder: () => this.setState({checkoutStep:5, orderNo:'TX-'+(280000+Math.floor(Math.random()*9999)), cart:[], promoApplied:false, promoInput:'', promoMsg:''}),
+      orderNo: s.orderNo,
+      // video
+      vd, commentCards,
+      videoFrame: {position:'relative',width: isMobile?'100%':'min(480px, 92vw)',height: isMobile?'100%':'min(94vh, 860px)',borderRadius: isMobile?'0':'22px',overflow:'hidden',background:'#111',boxShadow:'0 20px 80px rgba(0,0,0,.6)'},
+      nextVideo: () => this.setState(st => ({videoIdx:(st.videoIdx+1)%this.V.length, commentsOpen:false})),
+      prevVideo: () => this.setState(st => ({videoIdx:(st.videoIdx-1+this.V.length)%this.V.length, commentsOpen:false})),
+      commentsOpen: s.commentsOpen,
+      openComments: () => this.setState({commentsOpen:true}),
+      closeComments: () => this.setState({commentsOpen:false}),
+      sheetStyle: {position:'absolute',left: isMobile?0:'50%',right: isMobile?0:'auto',bottom:0,transform: isMobile?'none':'translateX(-50%)',width: isMobile?'auto':'min(480px,92vw)',height:'55%',background:'var(--surface)',color:'var(--text)',borderRadius:'22px 22px 0 0',padding:'14px 20px 18px 20px',display:'flex',flexDirection:'column',animation:'slideUp .3s',zIndex:5},
+      // live
+      live, liveProducts, liveCount: liveProducts.length, pinned,
+      pinnedVisible: isMobile || !isWide ? true : false,
+      liveDesktopPanel: !isMobile,
+      liveSubStyle: {marginLeft:'auto',background: s.following?'rgba(255,255,255,.2)':'var(--accent)',color:'#fff',border:'none',borderRadius:'9px',padding:'7px 14px',fontSize:'12px',fontWeight:'800',cursor:'pointer',flex:'0 0 auto'},
+      // gifts
+      giftPanelOpen: s.giftPanelOpen,
+      openGifts: () => this.setState({giftPanelOpen: true}),
+      closeGifts: () => this.setState({giftPanelOpen: false}),
+      coinsFmt: s.coins.toLocaleString('uk-UA').replace(/,/g,' '),
+      topUp: () => { this.setState(st => ({coins: st.coins + 500})); this.toast('+500 монет зараховано 🪙'); },
+      giftGrid: {display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'9px'},
+      gifts: this.GIFTS.map(g => ({
+        ...g, send: () => this.sendGift(g),
+        style: {display:'flex',flexDirection:'column',alignItems:'center',gap:'4px',background:'var(--surface2)',border:'1.5px solid '+(s.coins>=g.price?'var(--border)':'transparent'),borderRadius:'14px',padding:'12px 4px',cursor:'pointer',transition:'transform .15s,border-color .15s',opacity: s.coins>=g.price?1:.45},
+        iconStyle: {fontSize:'26px',lineHeight:1}
+      })),
+      giftFx: s.giftFx,
+      sendHeart: () => this.sendGift(this.GIFTS[1]),
+      chatMsgs: s.chat, chatInput: s.chatInput,
+      setChatInput: e => this.setState({chatInput: e.target.value}),
+      chatKey: e => { if (e.key==='Enter') this.sendChat(); },
+      sendChat: () => this.sendChat(),
+      // profile
+      userImg: this.ava(5), orders, profileMenu,
+      // toast
+      toastVisible: !!s.toast, toastMsg: s.toast || ''
+    };
+  }
+
+  GIFTS = [
+    {icon:'🌹',name:'Троянда',price:5},{icon:'❤️',name:'Серце',price:10},{icon:'👏',name:'Овації',price:25},
+    {icon:'🧸',name:'Ведмедик',price:50},{icon:'💎',name:'Діамант',price:100},{icon:'👑',name:'Корона',price:250},
+    {icon:'🚀',name:'Ракета',price:500},{icon:'🦄',name:'Єдиноріг',price:1000}
+  ];
+  sendGift(g) {
+    const s = this.state;
+    if (s.coins < g.price) { this.toast('Недостатньо монет — поповніть баланс'); return; }
+    const last = s.giftFx[s.giftFx.length-1];
+    const combo = last && last.gname===g.name && Date.now()-last.t<3000 ? last.combo+1 : 1;
+    const fx = {id:Date.now(), icon:g.icon, name:g.name, gname:g.name, sender:'Ви', combo, t:Date.now()};
+    this.setState(st => ({
+      coins: st.coins - g.price,
+      giftFx: [...st.giftFx.filter(x => Date.now()-x.t < 2600), fx],
+      chat: [...st.chat, {id:fx.id, name:'Ви', text:'надіслали подарунок ' + g.icon + ' ' + g.name}].slice(-9)
+    }));
+    setTimeout(() => this.setState(st => ({giftFx: st.giftFx.filter(x => x.id!==fx.id)})), 2600);
+  }
+  sendChat() {
+    const t = this.state.chatInput.trim();
+    if (!t) return;
+    this.setState(s => ({chat:[...s.chat,{id:Date.now(),name:'Ви',text:t}].slice(-9), chatInput:''}));
+  }
+}
+</script>
+</body>
+</html>

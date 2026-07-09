@@ -1,0 +1,8 @@
+{
+  "name": "treetex",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

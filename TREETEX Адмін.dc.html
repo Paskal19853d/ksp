@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0B0C10;--surface:#15171E;--surface2:#1D2028;--border:rgba(255,255,255,.08);--text:#F3F4F7;--muted:#8E94A3;--accent:#2E6BFF;--accent2:#FFD337;--danger:#FF3B5C;--success:#22C55E;--shadow:0 8px 30px rgba(0,0,0,.35);--r:18px}
+[data-theme="light"]{--bg:#F5F6F8;--surface:#FFFFFF;--surface2:#EEF0F4;--border:rgba(10,15,30,.08);--text:#0E1218;--muted:#626B7B;--shadow:0 8px 24px rgba(15,25,50,.10)}
+html,body{margin:0;padding:0;background:var(--bg)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent2)}
+input,button,select{font-family:'Manrope',sans-serif}
+input::placeholder{color:var(--muted)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:8px}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+@keyframes growUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+</style>
+</helmet>
+<div data-screen-label="Адмін-панель" style="display:flex;min-height:100vh;background:var(--bg);color:var(--text);font-family:'Manrope',sans-serif">
+
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <aside style="width:230px;flex:0 0 230px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:4px;padding:22px 12px;border-right:1px solid var(--border)">
+      <div style="padding:4px 12px 16px 12px">
+        <div style="font-family:'Unbounded';font-weight:800;font-size:17px;letter-spacing:.04em">TREETEX</div>
+        <div style="font-size:10.5px;font-weight:800;letter-spacing:.12em;color:var(--danger);margin-top:4px">АДМІНІСТРАТОР</div>
+      </div>
+      <sc-for list="{{ navItems }}" as="ni" hint-placeholder-count="8">
+        <div onClick="{{ ni.go }}" style="{{ ni.style }}" style-hover="background:var(--surface2)">
+          <span style="font-size:14px;font-weight:700">{{ ni.label }}</span>
+          <sc-if value="{{ ni.badge }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;background:var(--danger);color:#fff;font-size:10.5px;font-weight:800;border-radius:99px;padding:2px 7px">{{ ni.badge }}</span></sc-if>
+        </div>
+      </sc-for>
+      <div style="flex:1"></div>
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--surface);border:1px solid var(--border)">
+        <img src="{{ adminImg }}" alt="адмін" style="width:36px;height:36px;border-radius:99px;object-fit:cover">
+        <div style="flex:1;min-width:0"><div style="font-size:12.5px;font-weight:800">Роман Б.</div><div style="font-size:10.5px;color:var(--muted);font-weight:700">Super Admin</div></div>
+        <span onClick="{{ toggleTheme }}" style="cursor:pointer;font-size:14px;color:var(--muted)">{{ themeIcon }}</span>
+      </div>
+    </aside>
+  </sc-if>
+
+  <main style="flex:1;min-width:0;padding:0 22px 60px 22px">
+    <div style="display:flex;align-items:center;gap:12px;padding:18px 0;position:sticky;top:0;background:var(--bg);z-index:5">
+      <h1 style="margin:0;font-size:21px;font-weight:800">{{ sectionTitle }}</h1>
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <span onClick="{{ toggleTheme }}" style="cursor:pointer;font-size:16px;margin-left:auto">{{ themeIcon }}</span>
+      </sc-if>
+    </div>
+    <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:14px">
+        <sc-for list="{{ navChips }}" as="nc" hint-placeholder-count="8"><span onClick="{{ nc.go }}" style="{{ nc.style }}">{{ nc.label }}</span></sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+      <div data-screen-label="Огляд платформи" style="display:flex;flex-direction:column;gap:16px">
+        <div style="{{ kpiGrid }}">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+              <div style="font-size:12px;font-weight:700;color:var(--muted)">{{ k.label }}</div>
+              <div style="font-size:24px;font-weight:800;margin-top:6px">{{ k.value }}</div>
+              <div style="{{ k.deltaStyle }}">{{ k.delta }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="{{ twoCol }}">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:15px;font-weight:800">Оборот платформи — 7 днів</div>
+              <div style="font-size:13px;font-weight:800;color:var(--success)">4,86 млн ₴</div>
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:8px;height:160px;margin-top:18px">
+              <sc-for list="{{ chartBars }}" as="b" hint-placeholder-count="7">
+                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end">
+                  <div style="{{ b.style }}" style-hover="filter:brightness(1.2)"></div>
+                  <span style="font-size:10.5px;font-weight:700;color:var(--muted)">{{ b.label }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+            <div style="font-size:15px;font-weight:800;margin-bottom:14px">Черга модерації</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ queueSummary }}" as="q" hint-placeholder-count="4">
+                <div onClick="{{ q.go }}" style="display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:13px;background:var(--surface2);cursor:pointer" style-hover="filter:brightness(1.1)">
+                  <span style="{{ q.dotStyle }}"></span>
+                  <span style="flex:1;font-size:13px;font-weight:700">{{ q.label }}</span>
+                  <span style="font-size:15px;font-weight:800">{{ q.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <div style="margin-top:16px;background:var(--surface2);border-radius:13px;padding:13px;font-size:12px;font-weight:600;color:var(--muted);line-height:1.5">Середній час реакції модерації сьогодні — <b style="color:var(--text)">14 хв</b>. SLA 30 хв дотримано.</div>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+          <div style="font-size:15px;font-weight:800;margin-bottom:12px">Активні Live трансляції · {{ liveActiveCount }}</div>
+          <div style="display:flex;gap:12px;overflow-x:auto">
+            <sc-for list="{{ liveNow }}" as="l" hint-placeholder-count="3">
+              <div style="flex:0 0 250px;border:1px solid var(--border);border-radius:14px;overflow:hidden;position:relative">
+                <img src="{{ l.img }}" alt="{{ l.title }}" style="width:100%;height:110px;object-fit:cover;display:block">
+                <span style="position:absolute;top:8px;left:8px;background:var(--danger);color:#fff;font-size:10px;font-weight:800;border-radius:7px;padding:3px 7px;animation:pulse 2s infinite">LIVE</span>
+                <div style="padding:11px 13px">
+                  <div style="font-size:12.5px;font-weight:800;line-height:1.3">{{ l.title }}</div>
+                  <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:3px">{{ l.host }} · {{ l.viewers }} глядачів · {{ l.gmv }}</div>
+                  <button onClick="{{ l.stop }}" style="margin-top:9px;background:var(--surface2);color:var(--danger);border:1px solid var(--border);border-radius:9px;padding:7px 12px;font-size:11px;font-weight:800;cursor:pointer" style-hover="border-color:var(--danger)">Зупинити ефір</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Користувачі" style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input value="{{ userQuery }}" onChange="{{ setUserQuery }}" placeholder="Пошук за іменем або email…" style="flex:1;min-width:220px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13.5px;font-weight:600;color:var(--text);outline:none">
+          <div style="display:flex;gap:6px">
+            <sc-for list="{{ userFilters }}" as="f" hint-placeholder-count="3"><span onClick="{{ f.pick }}" style="{{ f.style }}">{{ f.name }}</span></sc-for>
+          </div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+          <sc-for list="{{ userRows }}" as="u" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+              <img src="{{ u.img }}" alt="{{ u.name }}" style="width:42px;height:42px;border-radius:99px;object-fit:cover">
+              <div style="flex:2;min-width:160px"><div style="font-size:13.5px;font-weight:800">{{ u.name }}</div><div style="font-size:11.5px;color:var(--muted);font-weight:600">{{ u.email }}</div></div>
+              <div style="flex:1;min-width:110px;font-size:12px;font-weight:700;color:var(--muted)">{{ u.meta }}</div>
+              <span style="{{ u.roleStyle }}">{{ u.role }}</span>
+              <span style="{{ u.statusStyle }}">{{ u.status }}</span>
+              <button onClick="{{ u.toggleBlock }}" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer" style-hover="border-color:var(--danger)">{{ u.blockLabel }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isModeration }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Модерація" style="display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:8px;overflow-x:auto">
+          <sc-for list="{{ modTabs }}" as="t" hint-placeholder-count="3"><span onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.name }}</span></sc-for>
+        </div>
+        <sc-if value="{{ modEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;padding:60px 20px;color:var(--muted)">
+            <div style="width:64px;height:64px;border-radius:99px;background:var(--success);color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px auto">✓</div>
+            <div style="font-size:15px;font-weight:800;color:var(--text)">Черга порожня</div>
+            <div style="font-size:12.5px;font-weight:600;margin-top:4px">Усі матеріали цієї категорії перевірено</div>
+          </div>
+        </sc-if>
+        <div style="{{ modGrid }}">
+          <sc-for list="{{ modCards }}" as="m" hint-placeholder-count="4">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;animation:slideUp .3s">
+              <sc-if value="{{ m.img }}" hint-placeholder-val="{{ true }}">
+                <img src="{{ m.img }}" alt="матеріал" style="width:100%;height:150px;object-fit:cover;display:block">
+              </sc-if>
+              <div style="padding:14px 16px 16px 16px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="{{ m.typeStyle }}">{{ m.type }}</span>
+                  <span style="font-size:11px;color:var(--muted);font-weight:700">{{ m.time }}</span>
+                </div>
+                <div style="font-size:13.5px;font-weight:800;margin-top:8px;line-height:1.35">{{ m.title }}</div>
+                <div style="font-size:12px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.45">{{ m.meta }}</div>
+                <div style="display:flex;gap:8px;margin-top:12px">
+                  <button onClick="{{ m.approve }}" style="flex:1;background:var(--success);color:#fff;border:none;border-radius:10px;padding:10px 0;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.1)">Схвалити</button>
+                  <button onClick="{{ m.reject }}" style="flex:1;background:var(--surface2);color:var(--danger);border:1px solid var(--border);border-radius:10px;padding:10px 0;font-size:12.5px;font-weight:800;cursor:pointer" style-hover="border-color:var(--danger)">Відхилити</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isComplaints }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Скарги" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        <sc-for list="{{ complaintRows }}" as="c" hint-placeholder-count="5">
+          <div style="display:flex;align-items:center;gap:14px;padding:14px 18px;border-bottom:1px solid var(--border);flex-wrap:wrap">
+            <span style="{{ c.sevStyle }}">{{ c.sev }}</span>
+            <div style="flex:2;min-width:200px"><div style="font-size:13.5px;font-weight:800">{{ c.title }}</div><div style="font-size:11.5px;color:var(--muted);font-weight:600">{{ c.meta }}</div></div>
+            <span style="{{ c.statusStyle }}">{{ c.status }}</span>
+            <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{ c.resolve }}" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer" style-hover="border-color:var(--success)">Вирішено</button>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isFinance }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Фінанси платформи" style="display:flex;flex-direction:column;gap:16px">
+        <div style="{{ kpiGrid }}">
+          <sc-for list="{{ finKpis }}" as="k" hint-placeholder-count="4">
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px">
+              <div style="font-size:12px;font-weight:700;color:var(--muted)">{{ k.label }}</div>
+              <div style="font-size:24px;font-weight:800;margin-top:6px">{{ k.value }}</div>
+              <div style="{{ k.deltaStyle }}">{{ k.delta }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="{{ twoCol }}">
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+            <div style="font-size:15px;font-weight:800;margin-bottom:14px">Комісії платформи</div>
+            <sc-for list="{{ commissions }}" as="c" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--border)">
+                <div style="flex:1"><div style="font-size:13.5px;font-weight:800">{{ c.name }}</div><div style="font-size:11.5px;color:var(--muted);font-weight:600">{{ c.desc }}</div></div>
+                <button onClick="{{ c.dec }}" style="width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:800;cursor:pointer">−</button>
+                <span style="font-size:16px;font-weight:800;min-width:52px;text-align:center">{{ c.value }}%</span>
+                <button onClick="{{ c.inc }}" style="width:30px;height:30px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:800;cursor:pointer">+</button>
+              </div>
+            </sc-for>
+            <div style="font-size:11.5px;color:var(--muted);font-weight:600;margin-top:12px">Зміни застосовуються з наступного розрахункового періоду.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+            <div style="font-size:15px;font-weight:800;margin-bottom:14px">Виплати продавцям у черзі</div>
+            <sc-for list="{{ payoutQueue }}" as="p" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--border)">
+                <img src="{{ p.img }}" alt="{{ p.name }}" style="width:36px;height:36px;border-radius:11px;object-fit:cover">
+                <div style="flex:1"><div style="font-size:13px;font-weight:800">{{ p.name }}</div><div style="font-size:11px;color:var(--muted);font-weight:600">{{ p.date }}</div></div>
+                <span style="font-size:13.5px;font-weight:800">{{ p.sum }}</span>
+                <button onClick="{{ p.approve }}" style="background:var(--accent);color:#fff;border:none;border-radius:9px;padding:7px 13px;font-size:11.5px;font-weight:800;cursor:pointer" style-hover="filter:brightness(1.12)">Схвалити</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isContent }}" hint-placeholder-val="{{ false }}">
+      <div data-screen-label="Категорії та банери" style="{{ twoCol }}">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+            <div style="font-size:15px;font-weight:800">Категорії каталогу</div>
+            <div style="display:flex;gap:8px">
+              <input value="{{ catInput }}" onChange="{{ setCatInput }}" placeholder="Нова категорія" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:12px;font-weight:600;color:var(--text);outline:none;width:140px">
+              <button onClick="{{ addCat }}" style="background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer">+</button>
+            </div>
+          </div>
+          <sc-for list="{{ catRows }}" as="c" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--border)">
+              <span style="flex:1;font-size:13.5px;font-weight:700">{{ c.name }}</span>
+              <span style="font-size:11.5px;color:var(--muted);font-weight:700">{{ c.count }} товарів</span>
+              <span onClick="{{ c.toggle }}" style="{{ c.style }}">{{ c.label }}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px">
+          <div style="font-size:15px;font-weight:800;margin-bottom:14px">Рекламні банери</div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <sc-for list="{{ banners }}" as="b" hint-placeholder-count="3">
+              <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+                <img src="{{ b.img }}" alt="{{ b.title }}" style="width:100%;height:84px;object-fit:cover;display:block;opacity:.9">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 13px">
+                  <div style="flex:1"><div style="font-size:12.5px;font-weight:800">{{ b.title }}</div><div style="font-size:11px;color:var(--muted);font-weight:600">{{ b.meta }}</div></div>
+                  <span onClick="{{ b.toggle }}" style="{{ b.style }}">{{ b.label }}</span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </main>
+
+  <sc-if value="{{ toastVisible }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;left:50%;bottom:40px;transform:translateX(-50%);z-index:80;background:var(--text);color:var(--bg);border-radius:99px;padding:12px 22px;font-size:13.5px;font-weight:800;box-shadow:var(--shadow);animation:slideUp .25s;white-space:nowrap">{{ toastMsg }}</div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#2E6BFF&quot;,&quot;options&quot;:[&quot;#2E6BFF&quot;,&quot;#0F62FE&quot;,&quot;#7C4DFF&quot;,&quot;#0BA37F&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Бренд&quot;}}">
+class Component extends DCLogic {
+  state = {
+    width: 1400, theme: 'dark', section: 'overview',
+    userQuery: '', userFilter: 'Всі', modTab: 'Відео',
+    users: [
+      {id:1,name:'Олена Коваленко',email:'olena.kv@gmail.com',role:'Покупець',meta:'Київ · 34 замовлення',blocked:false,av:5},
+      {id:2,name:'TechnoHub',email:'sales@technohub.ua',role:'Продавець',meta:'★ 4.9 · 312 товарів',blocked:false,av:33},
+      {id:3,name:'Максим Дорош',email:'max.d@ukr.net',role:'Покупець',meta:'Львів · 12 замовлень',blocked:false,av:14},
+      {id:4,name:'GlowUp Beauty',email:'hello@glowup.ua',role:'Продавець',meta:'★ 4.8 · 96 товарів',blocked:false,av:45},
+      {id:5,name:'kyiv.finds',email:'finds@gmail.com',role:'Блогер',meta:'128K підписників',blocked:false,av:15},
+      {id:6,name:'Віктор Прус',email:'v.prus@mail.com',role:'Покупець',meta:'Одеса · 2 скарги на акаунт',blocked:true,av:53}
+    ],
+    modQueue: [
+      {id:1,tab:'Відео',title:'Огляд смартфона X40 Ultra',meta:'@technohub · 2,1K переглядів за годину',time:'12 хв тому',seed:'modvid1'},
+      {id:2,tab:'Відео',title:'Розпакування замовлення з ефіру',meta:'@kyiv.finds · нове відео блогера',time:'26 хв тому',seed:'modvid2'},
+      {id:3,tab:'Товари',title:'Парфуми Noir Intense 100 мл',meta:'StyleWay · можлива репліка бренду, потрібна перевірка сертифіката',time:'40 хв тому',seed:'modprod1'},
+      {id:4,tab:'Товари',title:'Дитячий нічник Cloud',meta:'HomeLab · новий товар, перша публікація',time:'1 год тому',seed:'modprod2'},
+      {id:5,tab:'Коментарі',title:'«Це шахраї, не купуйте…»',meta:'Під відео @style.way · 3 скарги користувачів',time:'8 хв тому',seed:null},
+      {id:6,tab:'Коментарі',title:'Посилання на сторонній сайт у коментарі',meta:'Під ефіром GlowUp · автоспам-фільтр',time:'18 хв тому',seed:null}
+    ],
+    complaints: [
+      {id:1,sev:'Висока',title:'Товар не відповідає опису — вимога повернення',meta:'Покупець Марта Л. → StyleWay · замовлення TX-284650 · 2 год тому',open:true},
+      {id:2,sev:'Висока',title:'Підозра на продаж реплік брендових товарів',meta:'3 скарги → магазин LuxBags · передано юристам · вчора',open:true},
+      {id:3,sev:'Середня',title:'Образи в чаті прямого ефіру',meta:'Глядачі → користувач grey_wolf · ефір GlowUp · 4 год тому',open:true},
+      {id:4,sev:'Низька',title:'Продавець не відповідає 48 годин',meta:'Покупець Андрій С. → HomeLab · 5 липня',open:false},
+      {id:5,sev:'Низька',title:'Помилка в описі акції',meta:'Покупець → TechnoHub · виправлено продавцем · 4 липня',open:false}
+    ],
+    commissions: [
+      {id:1,name:'Продаж з каталогу',desc:'Стандартна комісія маркетплейсу',value:8},
+      {id:2,name:'Продаж з Live-ефіру',desc:'Знижена для стимулювання ефірів',value:5},
+      {id:3,name:'Продаж з відео',desc:'Покупка через картку товару у відео',value:6},
+      {id:4,name:'Виведення коштів',desc:'Комісія платіжного провайдера',value:1}
+    ],
+    payoutQueue: [
+      {id:1,name:'TechnoHub',date:'запит сьогодні, 09:12',sum:'84 320 ₴',av:33},
+      {id:2,name:'GlowUp Beauty',date:'запит сьогодні, 08:40',sum:'56 780 ₴',av:45},
+      {id:3,name:'StyleWay',date:'запит вчора, 22:03',sum:'112 400 ₴',av:12},
+      {id:4,name:'HomeLab',date:'запит вчора, 18:31',sum:'23 950 ₴',av:60}
+    ],
+    cats: [
+      {id:1,name:'Електроніка',count:'48 200',active:true},{id:2,name:'Мода',count:'112 500',active:true},
+      {id:3,name:'Краса',count:'36 800',active:true},{id:4,name:'Дім',count:'54 100',active:true},
+      {id:5,name:'Спорт',count:'21 400',active:true},{id:6,name:'Авто',count:'9 300',active:false}
+    ],
+    catInput:'',
+    banners: [
+      {id:1,title:'Літній розпродаж −40%',meta:'Головна лента · 2,4M показів · CTR 3,8%',active:true,seed:'bansale'},
+      {id:2,title:'Live Shopping — щодня о 19:00',meta:'Категорії · 1,1M показів · CTR 2,2%',active:true,seed:'banlive'},
+      {id:3,title:'Стань продавцем TREETEX',meta:'Профіль · 640K показів · CTR 1,6%',active:false,seed:'banseller'}
+    ],
+    lives: [
+      {id:1,title:'Розпродаж косметики до −40%',host:'GlowUp Beauty',viewers:'2 314',gmv:'GMV 38K ₴',seed:'livebeauty'},
+      {id:2,title:'Примірка кросівок наживо',host:'StyleWay',viewers:'1 102',gmv:'GMV 21K ₴',seed:'livesneak'},
+      {id:3,title:'Гаджети тижня',host:'TechnoHub',viewers:'876',gmv:'GMV 17K ₴',seed:'livetech'}
+    ],
+    toast:null
+  };
+
+  componentDidMount() {
+    this._onR = () => this.setState({width: window.innerWidth});
+    window.addEventListener('resize', this._onR);
+    this.setState({width: window.innerWidth});
+    this.syncProps();
+  }
+  componentDidUpdate() { this.syncProps(); }
+  componentWillUnmount() { window.removeEventListener('resize', this._onR); }
+  syncProps() {
+    const r = document.documentElement;
+    if (this.props.accent) r.style.setProperty('--accent', this.props.accent);
+    r.dataset.theme = this.state.theme;
+  }
+  img(seed,w,h){ return `https://picsum.photos/seed/${seed}/${w}/${h}`; }
+  ava(n){ return `https://i.pravatar.cc/100?img=${n}`; }
+  toast(m){ clearTimeout(this._tt); this.setState({toast:m}); this._tt=setTimeout(()=>this.setState({toast:null}),2200); }
+
+  renderVals() {
+    const s = this.state;
+    const isMobile = s.width < 900, isDesktop = !isMobile;
+    const sec = n => s.section === n;
+    const chip = act => ({flex:'0 0 auto',padding:'9px 15px',borderRadius:'99px',fontSize:'12.5px',fontWeight:'800',cursor:'pointer',whiteSpace:'nowrap',border:'1px solid '+(act?'var(--accent)':'var(--border)'),background:act?'var(--accent)':'var(--surface)',color:act?'#fff':'var(--text)'});
+    const pill = (bg,fg) => ({background:bg,color:fg,fontSize:'11px',fontWeight:'800',borderRadius:'8px',padding:'5px 10px',whiteSpace:'nowrap'});
+    const deltaStyle = up => ({fontSize:'11.5px',fontWeight:'800',marginTop:'6px',color: up?'var(--success)':'var(--danger)'});
+
+    const modCount = s.modQueue.length;
+    const openComplaints = s.complaints.filter(c=>c.open).length;
+    const navDef = [['overview','Огляд'],['users','Користувачі'],['moderation','Модерація'],['complaints','Скарги'],['finance','Фінанси та комісії'],['content','Категорії та банери']];
+    const badges = {moderation: modCount ? String(modCount) : null, complaints: openComplaints ? String(openComplaints) : null};
+    const navItems = navDef.map(n => ({
+      label:n[1], go:()=>this.setState({section:n[0]}), badge: badges[n[0]]||null,
+      style:{display:'flex',alignItems:'center',gap:'10px',padding:'11px 13px',borderRadius:'13px',cursor:'pointer',background:sec(n[0])?'var(--surface2)':'transparent',color:sec(n[0])?'var(--text)':'var(--muted)',borderLeft:sec(n[0])?'3px solid var(--accent)':'3px solid transparent'}
+    }));
+    const navChips = navDef.map(n => ({label:n[1], go:()=>this.setState({section:n[0]}), style:chip(sec(n[0]))}));
+
+    const kpis = [
+      {label:'Оборот сьогодні (GMV)',value:'812 400 ₴',delta:'↑ 14% до вчора',deltaStyle:deltaStyle(true)},
+      {label:'Активні користувачі',value:'184K',delta:'↑ 6% за тиждень',deltaStyle:deltaStyle(true)},
+      {label:'Активні продавці',value:'3 214',delta:'+38 нових сьогодні',deltaStyle:deltaStyle(true)},
+      {label:'Комісія платформи',value:'58 900 ₴',delta:'↑ 11%',deltaStyle:deltaStyle(true)}
+    ];
+    const bars = [52,61,48,74,68,92,80], mx = Math.max(...bars);
+    const chartBars = bars.map((v,i) => ({label:['Пн','Вт','Ср','Чт','Пт','Сб','Нд'][i], style:{width:'100%',maxWidth:'46px',height:(v/mx*100)+'%',borderRadius:'8px 8px 4px 4px',background: v===mx?'var(--accent2)':'var(--accent)',transformOrigin:'bottom',animation:'growUp .5s'}}));
+    const qDefs = [['Відео на перевірці',s.modQueue.filter(m=>m.tab==='Відео').length,'var(--accent)','moderation'],['Товари на перевірці',s.modQueue.filter(m=>m.tab==='Товари').length,'var(--accent2)','moderation'],['Коментарі зі скаргами',s.modQueue.filter(m=>m.tab==='Коментарі').length,'var(--danger)','moderation'],['Відкриті скарги',openComplaints,'#8B5CF6','complaints']];
+    const queueSummary = qDefs.map(q => ({label:q[0], count:String(q[1]), go:()=>this.setState({section:q[3]}), dotStyle:{width:'9px',height:'9px',borderRadius:'99px',background:q[2],flex:'0 0 auto'}}));
+    const liveNow = s.lives.map(l => ({...l, img:this.img(l.seed,500,240), stop:()=>{ this.setState(st=>({lives: st.lives.filter(x=>x.id!==l.id)})); this.toast('Ефір «'+l.host+'» зупинено'); }}));
+
+    // users
+    const uq = s.userQuery.toLowerCase();
+    const roles = ['Всі','Покупець','Продавець','Блогер'];
+    const userFilters = roles.map(r => ({name:r, pick:()=>this.setState({userFilter:r}), style:chip(s.userFilter===r)}));
+    const roleColors = {'Покупець':['var(--surface2)','var(--muted)'],'Продавець':['var(--accent)','#fff'],'Блогер':['var(--accent2)','#111']};
+    const userRows = s.users
+      .filter(u => (s.userFilter==='Всі'||u.role===s.userFilter) && (!uq || u.name.toLowerCase().includes(uq) || u.email.toLowerCase().includes(uq)))
+      .map(u => ({
+        ...u, img:this.ava(u.av),
+        roleStyle: pill(roleColors[u.role][0], roleColors[u.role][1]),
+        status: u.blocked?'Заблокований':'Активний',
+        statusStyle: pill(u.blocked?'var(--danger)':'var(--success)','#fff'),
+        blockLabel: u.blocked?'Розблокувати':'Блокувати',
+        toggleBlock: () => { this.setState(st=>({users: st.users.map(x=>x.id===u.id?{...x,blocked:!x.blocked}:x)})); this.toast(u.blocked?'Користувача розблоковано':'Користувача заблоковано'); }
+      }));
+
+    // moderation
+    const tabs = ['Відео','Товари','Коментарі'];
+    const modTabs = tabs.map(t => {
+      const n = s.modQueue.filter(m=>m.tab===t).length;
+      return {name: t + (n?' · '+n:''), pick:()=>this.setState({modTab:t}), style:chip(s.modTab===t)};
+    });
+    const typeColors = {'Відео':['var(--accent)','#fff'],'Товари':['var(--accent2)','#111'],'Коментарі':['var(--danger)','#fff']};
+    const inTab = s.modQueue.filter(m=>m.tab===s.modTab);
+    const modCards = inTab.map(m => ({
+      ...m, img: m.seed ? this.img(m.seed,500,300) : null,
+      type: m.tab, typeStyle: pill(typeColors[m.tab][0], typeColors[m.tab][1]),
+      approve: () => { this.setState(st=>({modQueue: st.modQueue.filter(x=>x.id!==m.id)})); this.toast('Схвалено ✓'); },
+      reject: () => { this.setState(st=>({modQueue: st.modQueue.filter(x=>x.id!==m.id)})); this.toast('Відхилено та приховано'); }
+    }));
+
+    // complaints
+    const sevColors = {'Висока':['var(--danger)','#fff'],'Середня':['var(--accent2)','#111'],'Низька':['var(--surface2)','var(--muted)']};
+    const complaintRows = s.complaints.map(c => ({
+      ...c, sevStyle: pill(sevColors[c.sev][0], sevColors[c.sev][1]),
+      status: c.open?'Відкрита':'Вирішена',
+      statusStyle: pill(c.open?'var(--accent)':'var(--success)','#fff'),
+      resolve: () => { this.setState(st=>({complaints: st.complaints.map(x=>x.id===c.id?{...x,open:false}:x)})); this.toast('Скаргу закрито ✓'); }
+    }));
+
+    // finance
+    const finKpis = [
+      {label:'GMV за місяць',value:'21,4 млн ₴',delta:'↑ 18%',deltaStyle:deltaStyle(true)},
+      {label:'Дохід платформи',value:'1,58 млн ₴',delta:'↑ 15%',deltaStyle:deltaStyle(true)},
+      {label:'Виплачено продавцям',value:'18,2 млн ₴',delta:'96% вчасно',deltaStyle:deltaStyle(true)},
+      {label:'Повернення коштів',value:'214 300 ₴',delta:'↓ 0,4% від GMV',deltaStyle:deltaStyle(true)}
+    ];
+    const commissions = s.commissions.map(c => ({
+      ...c,
+      inc: () => this.setState(st=>({commissions: st.commissions.map(x=>x.id===c.id?{...x,value:Math.min(30,x.value+1)}:x)})),
+      dec: () => this.setState(st=>({commissions: st.commissions.map(x=>x.id===c.id?{...x,value:Math.max(0,x.value-1)}:x)}))
+    }));
+    const payoutQueue = s.payoutQueue.map(p => ({
+      ...p, img:this.ava(p.av),
+      approve: () => { this.setState(st=>({payoutQueue: st.payoutQueue.filter(x=>x.id!==p.id)})); this.toast('Виплату '+p.sum+' схвалено'); }
+    }));
+
+    // content
+    const catRows = s.cats.map(c => ({
+      ...c, label: c.active?'Активна':'Прихована',
+      style:{cursor:'pointer',...pill(c.active?'var(--success)':'var(--surface2)', c.active?'#fff':'var(--muted)')},
+      toggle: () => this.setState(st=>({cats: st.cats.map(x=>x.id===c.id?{...x,active:!x.active}:x)}))
+    }));
+    const banners = s.banners.map(b => ({
+      ...b, img:this.img(b.seed,600,180), label: b.active?'Показується':'Вимкнено',
+      style:{cursor:'pointer',...pill(b.active?'var(--success)':'var(--surface2)', b.active?'#fff':'var(--muted)')},
+      toggle: () => this.setState(st=>({banners: st.banners.map(x=>x.id===b.id?{...x,active:!x.active}:x)}))
+    }));
+
+    return {
+      isMobile, isDesktop,
+      isOverview: sec('overview'), isUsers: sec('users'), isModeration: sec('moderation'),
+      isComplaints: sec('complaints'), isFinance: sec('finance'), isContent: sec('content'),
+      sectionTitle: (navDef.find(n=>n[0]===s.section)||navDef[0])[1],
+      themeIcon: s.theme==='dark'?'☾':'☀',
+      toggleTheme: () => this.setState(st=>({theme: st.theme==='dark'?'light':'dark'})),
+      adminImg: this.ava(68),
+      navItems, navChips,
+      kpiGrid:{display:'grid',gridTemplateColumns: isMobile?'1fr 1fr':'repeat(4,1fr)',gap:'12px'},
+      twoCol:{display:'grid',gridTemplateColumns: isMobile?'1fr':'1.6fr 1fr',gap:'16px',alignItems:'start'},
+      modGrid:{display:'grid',gridTemplateColumns: isMobile?'1fr':'repeat(auto-fill,minmax(280px,1fr))',gap:'14px'},
+      kpis, chartBars, queueSummary,
+      liveNow, liveActiveCount: liveNow.length,
+      userQuery: s.userQuery, setUserQuery: e=>this.setState({userQuery:e.target.value}),
+      userFilters, userRows,
+      modTabs, modCards, modEmpty: inTab.length===0,
+      complaintRows,
+      finKpis, commissions, payoutQueue,
+      catRows, banners,
+      catInput: s.catInput, setCatInput: e=>this.setState({catInput:e.target.value}),
+      addCat: () => {
+        if(!this.state.catInput.trim()) return;
+        this.setState(st=>({cats:[...st.cats,{id:Date.now(),name:st.catInput.trim(),count:'0',active:true}],catInput:''}));
+        this.toast('Категорію додано ✓');
+      },
+      toastVisible: !!s.toast, toastMsg: s.toast||''
+    };
+  }
+}
+</script>
+</body>
+</html>
