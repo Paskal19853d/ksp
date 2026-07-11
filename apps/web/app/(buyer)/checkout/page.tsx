@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { products, formatPrice } from "@/lib/data/products";
+import { formatPrice } from "@/lib/data/products";
+import { useProducts } from "@/lib/data/useProducts";
+import { api, ApiError } from "@/lib/api";
+import type { Order } from "@treetex/shared";
 
 const deliveryOpts = [
   { id: "nova", name: "Нова пошта, відділення", eta: "завтра", price: "60 ₴" },
@@ -19,7 +22,7 @@ const payOpts = [
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cart } = useAppState();
+  const { cart, removeFromCart } = useAppState();
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,6 +32,8 @@ export default function CheckoutPage() {
   const [delivery, setDelivery] = useState("nova");
   const [pay, setPay] = useState("card");
   const [orderNo, setOrderNo] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const { products } = useProducts({ limit: 100 });
 
   const items = cart.map((c) => ({ ...c, product: products.find((p) => p.id === c.id) })).filter((c) => c.product);
   const subtotal = items.reduce((sum, c) => sum + (c.product?.price ?? 0) * c.qty, 0);
@@ -51,9 +56,27 @@ export default function CheckoutPage() {
     setStep((s) => Math.min(s + 1, 5));
   }
 
-  function confirmOrder() {
-    setOrderNo("TX-" + (280000 + Math.floor(Math.random() * 9999)));
-    setStep(5);
+  async function confirmOrder() {
+    setSubmitting(true);
+    setError("");
+    try {
+      const order = await api.post<Order>("/orders", {
+        items: items.map((c) => ({ productId: c.id, qty: c.qty })),
+        recipientName: name,
+        recipientPhone: phone,
+        city,
+        address: addr,
+        deliveryMethod: delivery,
+        paymentMethod: pay,
+      });
+      items.forEach((c) => removeFromCart(c.id));
+      setOrderNo(order.orderNo);
+      setStep(5);
+    } catch (e) {
+      setError(e instanceof ApiError ? e.message : "Не вдалося оформити замовлення");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -157,8 +180,13 @@ export default function CheckoutPage() {
               <span>{formatPrice(total)}</span>
             </div>
           </div>
-          <button onClick={confirmOrder} className="rounded-2xl bg-accent2 py-4 text-[15px] font-extrabold text-[#111] hover:brightness-105">
-            Підтвердити та оплатити {formatPrice(total)}
+          {error && <div className="text-[12.5px] font-bold text-danger">{error}</div>}
+          <button
+            onClick={confirmOrder}
+            disabled={submitting}
+            className="rounded-2xl bg-accent2 py-4 text-[15px] font-extrabold text-[#111] hover:brightness-105 disabled:opacity-60"
+          >
+            {submitting ? "Оформлюємо…" : `Підтвердити та оплатити ${formatPrice(total)}`}
           </button>
         </div>
       )}

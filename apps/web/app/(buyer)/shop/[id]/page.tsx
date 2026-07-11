@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { products, shops, imgUrl, avatarUrl, formatPrice } from "@/lib/data/products";
+import { shops, imgUrl, avatarUrl, formatPrice } from "@/lib/data/products";
+import { useProducts, productImgUrl } from "@/lib/data/useProducts";
 
 const shopTabs = ["Товари", "Відгуки", "Акції", "Про магазин"];
 
@@ -17,7 +18,8 @@ export default function ShopPage() {
   const shop = shops.find((s) => s.id === shopId) ?? shops[0];
   const shopCover = imgUrl("shopcoverbig" + shop.id, 1200, 300);
   const shopLogo = avatarUrl(shop.av);
-  const shopProducts = products.filter((p) => p.seller === shop.name);
+  const { products } = useProducts({ limit: 100 });
+  const shopProducts = products.filter((p) => p.seller?.name === shop.name);
 
   return (
     <div className="mx-auto max-w-[1060px] pb-[110px]">
@@ -95,7 +97,7 @@ export default function ShopPage() {
                 href={`/product/${p.id}`}
                 className="cursor-pointer overflow-hidden rounded-card border border-border bg-surface hover:-translate-y-1 hover:shadow-card"
               >
-                <img src={imgUrl(p.seed, 480, 600)} alt={p.name} className="block aspect-[4/5] w-full object-cover" />
+                <img src={productImgUrl(p, 480, 600)} alt={p.name} className="block aspect-[4/5] w-full object-cover" />
                 <div className="p-3.5">
                   <div className="text-[13px] font-bold leading-snug">{p.name}</div>
                   <div className="mt-1.5 text-[15px] font-extrabold">{formatPrice(p.price)}</div>

@@ -5,14 +5,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { products, stories, lives, categories, imgUrl, avatarUrl } from "@/lib/data/products";
+import { stories, categories, imgUrl, avatarUrl } from "@/lib/data/products";
+import { useProducts, toCardData } from "@/lib/data/useProducts";
+import { useLiveStreams } from "@/lib/data/useLiveStream";
 
 export default function FeedPage() {
   const router = useRouter();
   const { addToCart, favs, toggleFav } = useAppState();
   const [activeCat, setActiveCat] = useState("Все");
 
-  const filtered = activeCat === "Все" ? products : products.filter((p) => p.cat === activeCat);
+  const { products } = useProducts({ limit: 60 });
+  const { streams: liveStreams } = useLiveStreams();
+  const filtered = activeCat === "Все" ? products : products.filter((p) => p.category?.name === activeCat);
 
   return (
     <div className="mx-auto max-w-[1120px] px-4 pb-[100px]">
@@ -59,38 +63,40 @@ export default function FeedPage() {
         </div>
       </div>
 
-      <div className="mb-3 mt-2 flex items-center justify-between">
-        <h2 className="m-0 text-[19px] font-extrabold">Зараз у ефірі</h2>
-        <Link href="/live" className="cursor-pointer text-[13px] font-bold text-accent">
-          Усі ефіри →
-        </Link>
-      </div>
-      <div className="relative -mx-4">
-        <div className="flex gap-3.5 overflow-x-auto px-4 pb-2 no-scrollbar [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%_-_28px),transparent)]">
-          {lives.map((lv) => (
-            <div
-              key={lv.title}
-              onClick={() => router.push("/live")}
-              className="relative flex-none cursor-pointer overflow-hidden rounded-card shadow-card hover:-translate-y-1"
-              style={{ width: 210 }}
-            >
-              <img src={imgUrl(lv.seed, 420, 560)} alt={lv.title} className="block h-[280px] w-[210px] object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% to-black/75" />
-              <div className="absolute left-2.5 top-2.5 flex gap-1.5">
-                <span className="animate-pulse2 rounded-lg bg-danger px-2 py-1 text-[11px] font-extrabold text-white">
-                  LIVE
-                </span>
-                <span className="rounded-lg bg-black/55 px-2 py-1 text-[11px] font-bold text-white">{lv.viewers}</span>
-              </div>
-              <div className="absolute bottom-3 left-3 right-3 text-white">
-                <div className="text-[13px] font-extrabold leading-tight">{lv.title}</div>
-                <div className="mt-0.5 text-[11px] font-semibold opacity-80">{lv.host}</div>
-              </div>
+      {liveStreams.length > 0 && (
+        <>
+          <div className="mb-3 mt-2 flex items-center justify-between">
+            <h2 className="m-0 text-[19px] font-extrabold">Зараз у ефірі</h2>
+            <Link href="/live" className="cursor-pointer text-[13px] font-bold text-accent">
+              Усі ефіри →
+            </Link>
+          </div>
+          <div className="relative -mx-4">
+            <div className="flex gap-3.5 overflow-x-auto px-4 pb-2 no-scrollbar [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%_-_28px),transparent)]">
+              {liveStreams.map((lv) => (
+                <div
+                  key={lv.id}
+                  onClick={() => router.push(`/live?id=${lv.id}`)}
+                  className="relative flex-none cursor-pointer overflow-hidden rounded-card shadow-card hover:-translate-y-1"
+                  style={{ width: 210 }}
+                >
+                  <img src={imgUrl("livebeauty", 420, 560)} alt={lv.title} className="block h-[280px] w-[210px] object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% to-black/75" />
+                  <div className="absolute left-2.5 top-2.5 flex gap-1.5">
+                    <span className="animate-pulse2 rounded-lg bg-danger px-2 py-1 text-[11px] font-extrabold text-white">
+                      LIVE
+                    </span>
+                  </div>
+                  <div className="absolute bottom-3 left-3 right-3 text-white">
+                    <div className="text-[13px] font-extrabold leading-tight">{lv.title}</div>
+                  </div>
+                </div>
+              ))}
+              <span className="flex-none px-1" aria-hidden />
             </div>
-          ))}
-          <span className="flex-none px-1" aria-hidden />
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
       <div className="relative -mx-4">
         <div className="flex gap-2 overflow-x-auto px-4 pb-1.5 pt-4 no-scrollbar [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%_-_28px),transparent)]">
@@ -119,19 +125,7 @@ export default function FeedPage() {
         {filtered.map((p) => (
           <div key={p.id} className="relative">
             <div onClick={() => router.push(`/product/${p.id}`)}>
-              <ProductCard
-                product={{
-                  id: p.id,
-                  name: p.name,
-                  price: p.price,
-                  oldPrice: p.old || undefined,
-                  rating: p.rating,
-                  reviewCount: p.reviews,
-                  badgeLabel: p.badge || undefined,
-                  imageUrl: imgUrl(p.seed, 480, 600),
-                }}
-                onAddToCart={(id) => addToCart(id)}
-              />
+              <ProductCard product={toCardData(p)} onAddToCart={(id) => addToCart(id)} />
             </div>
             <span
               onClick={(e) => {

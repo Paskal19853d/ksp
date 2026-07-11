@@ -1,31 +1,62 @@
 "use client";
 
 import { useState } from "react";
+import { fmt } from "@/lib/data/seller";
+import { useSellerOrders, orderStatusLabels } from "@/lib/data/useOrders";
+import { api, ApiError } from "@/lib/api";
+import type { OrderStatus } from "@treetex/shared";
 import { useSellerState } from "@/lib/store/SellerStateContext";
-import { fmt, imgUrl } from "@/lib/data/seller";
-import type { OrderStatus } from "@/lib/data/seller";
 
-const filters: (OrderStatus | "Всі")[] = ["Всі", "Новий", "Пакується", "В дорозі", "Доставлено", "Повернення"];
+const filters: (OrderStatus | "all")[] = [
+  "all",
+  "new",
+  "packing",
+  "shipping",
+  "delivered",
+  "return_requested",
+];
 
-const statusColors: Record<string, string> = {
-  Новий: "bg-accent text-white",
-  Пакується: "bg-accent2 text-[#111]",
-  "В дорозі": "bg-[#8B5CF6] text-white",
-  Доставлено: "bg-success text-white",
-  Повернення: "bg-danger text-white",
+const statusColors: Record<OrderStatus, string> = {
+  new: "bg-accent text-white",
+  packing: "bg-accent2 text-[#111]",
+  shipping: "bg-[#8B5CF6] text-white",
+  delivered: "bg-success text-white",
+  cancelled: "bg-danger text-white",
+  return_requested: "bg-danger text-white",
 };
 
-const nextLabels: Record<string, string> = {
-  Новий: "→ Пакується",
-  Пакується: "→ Відправити",
-  "В дорозі": "→ Доставлено",
+const nextStatus: Partial<Record<OrderStatus, OrderStatus>> = {
+  new: "packing",
+  packing: "shipping",
+  shipping: "delivered",
+};
+
+const nextLabels: Partial<Record<OrderStatus, string>> = {
+  new: "→ Пакується",
+  packing: "→ Відправити",
+  shipping: "→ Доставлено",
 };
 
 export default function SellerOrdersPage() {
-  const { orders, advanceOrder } = useSellerState();
-  const [filter, setFilter] = useState<OrderStatus | "Всі">("Всі");
+  const { orders, loading, reload } = useSellerOrders();
+  const { showToast } = useSellerState();
+  const [filter, setFilter] = useState<OrderStatus | "all">("all");
 
-  const rows = filter === "Всі" ? orders : orders.filter((o) => o.status === filter);
+  const rows = filter === "all" ? orders : orders.filter((o) => o.status === filter);
+
+  async function advance(orderId: number, status: OrderStatus) {
+    try {
+      await api.patch(`/orders/${orderId}/status`, { status });
+      await reload();
+      showToast("Статус замовлення оновлено");
+    } catch (e) {
+      showToast(e instanceof ApiError ? e.message : "Не вдалося оновити статус");
+    }
+  }
+
+  if (loading) {
+    return <div className="py-16 text-center text-[13px] font-semibold text-muted">Завантаження…</div>;
+  }
 
   return (
     <div className="flex flex-col gap-3.5">
@@ -41,33 +72,37 @@ export default function SellerOrdersPage() {
               color: filter === f ? "#fff" : "var(--text)",
             }}
           >
-            {f === "Всі" ? `Всі (${orders.length})` : f}
+            {f === "all" ? `Всі (${orders.length})` : orderStatusLabels[f]}
           </span>
         ))}
       </div>
 
       <div className="overflow-hidden rounded-card border border-border bg-surface">
+        {rows.length === 0 && (
+          <div className="p-6 text-center text-[13px] font-semibold text-muted">Замовлень немає</div>
+        )}
         {rows.map((o) => (
-          <div key={o.no} className="flex flex-wrap items-center gap-3.5 border-b border-border p-4.5 last:border-0">
-            <img src={imgUrl(o.seed, 92, 92)} alt="товар" className="h-[46px] w-[46px] rounded-xl object-cover" />
+          <div key={o.id} className="flex flex-wrap items-center gap-3.5 border-b border-border p-4.5 last:border-0">
             <div className="min-w-[150px] flex-[2]">
               <div className="text-[13.5px] font-extrabold">
-                {o.no} · {fmt(o.sum)}
+                {o.orderNo} · {fmt(o.sum)}
               </div>
-              <div className="text-xs font-semibold text-muted">{o.name}</div>
+              <div className="text-xs font-semibold text-muted">
+                {o.items.length} {o.items.length === 1 ? "товар" : "товари"}
+              </div>
             </div>
             <div className="min-w-[120px] flex-1">
-              <div className="text-[12.5px] font-bold">{o.buyer}</div>
+              <div className="text-[12.5px] font-bold">{o.recipientName}</div>
               <div className="text-[11.5px] font-semibold text-muted">
-                {o.date} · {o.city}
+                {new Date(o.createdAt).toLocaleDateString("uk-UA")} · {o.city}
               </div>
             </div>
             <span className={`whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-extrabold ${statusColors[o.status]}`}>
-              {o.status}
+              {orderStatusLabels[o.status]}
             </span>
-            {nextLabels[o.status] && (
+            {nextStatus[o.status] && (
               <button
-                onClick={() => advanceOrder(o.no)}
+                onClick={() => advance(o.id, nextStatus[o.status]!)}
                 className="rounded-[10px] border border-border bg-surface2 px-3.5 py-2 text-xs font-extrabold hover:border-accent"
               >
                 {nextLabels[o.status]}

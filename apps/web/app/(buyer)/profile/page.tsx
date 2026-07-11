@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/store/AppStateContext";
 import { useAuth } from "@/lib/store/AuthContext";
-import { avatarUrl, imgUrl, orders } from "@/lib/data/products";
+import { avatarUrl } from "@/lib/data/products";
+import { useMyOrders, orderStatusLabels } from "@/lib/data/useOrders";
+import type { OrderStatus } from "@treetex/shared";
 
-const statusColors: Record<string, string> = {
-  Доставлено: "bg-success text-white",
-  "В дорозі": "bg-[#8B5CF6] text-white",
-  Скасовано: "bg-danger text-white",
+const statusColors: Record<OrderStatus, string> = {
+  new: "bg-surface2 text-text",
+  packing: "bg-[#8B5CF6] text-white",
+  shipping: "bg-[#8B5CF6] text-white",
+  delivered: "bg-success text-white",
+  cancelled: "bg-danger text-white",
+  return_requested: "bg-danger text-white",
 };
 
 const profileMenu = [
@@ -25,6 +30,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { theme, toggleTheme } = useAppState();
   const { user, logout } = useAuth();
+  const { orders, loading: ordersLoading } = useMyOrders();
 
   async function handleLogout() {
     await logout();
@@ -64,17 +70,20 @@ export default function ProfilePage() {
 
       <h2 className="mb-2.5 mt-5.5 text-base font-extrabold">Мої замовлення</h2>
       <div className="flex flex-col gap-2">
+        {ordersLoading && <div className="py-4 text-center text-[13px] font-semibold text-muted">Завантаження…</div>}
+        {!ordersLoading && orders.length === 0 && (
+          <div className="py-4 text-center text-[13px] font-semibold text-muted">Замовлень поки немає</div>
+        )}
         {orders.map((o) => (
-          <div key={o.no} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3">
-            <img src={imgUrl(o.seed, 88, 88)} alt="замовлення" className="h-11 w-11 rounded-[10px] object-cover" />
+          <div key={o.id} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3">
             <div className="flex-1">
-              <div className="text-[13px] font-extrabold">{o.no}</div>
+              <div className="text-[13px] font-extrabold">{o.orderNo}</div>
               <div className="text-[11.5px] font-semibold text-muted">
-                {o.date} · {o.sum}
+                {new Date(o.createdAt).toLocaleDateString("uk-UA")} · {o.sum.toLocaleString("uk-UA")} ₴
               </div>
             </div>
             <span className={`rounded-lg px-2.5 py-1 text-[11px] font-extrabold ${statusColors[o.status]}`}>
-              {o.status}
+              {orderStatusLabels[o.status]}
             </span>
           </div>
         ))}

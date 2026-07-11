@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { chatPool, products, imgUrl, avatarUrl, formatPrice } from "@/lib/data/products";
+import { imgUrl, avatarUrl, formatPrice } from "@/lib/data/products";
+import { useProduct, productImgUrl } from "@/lib/data/useProducts";
+import { useStream, useLiveStreams, useStreamPresence } from "@/lib/data/useLiveStream";
+import { useLiveChat } from "@/lib/data/useLiveChat";
 
 const gifts = [
   { icon: "🌹", name: "Троянда", price: 10 },
@@ -14,32 +17,81 @@ const gifts = [
   { icon: "🏆", name: "Кубок", price: 1000 },
 ];
 
-const liveProducts = products.slice(0, 3);
-
 let giftIdCounter = 0;
+
+function FeaturedProduct({ productId, stockOverride }: { productId: number; stockOverride?: number }) {
+  const { product } = useProduct(productId);
+  const { addToCart } = useAppState();
+  if (!product) return null;
+  const stock = stockOverride ?? product.stock;
+
+  return (
+    <div className="absolute right-3.5 top-[70px] w-[190px] rounded-2xl border border-white/20 bg-black/55 p-2.5 text-white backdrop-blur-md">
+      <div className="mb-1.5 text-[10px] font-extrabold tracking-wider text-accent2">ЗАРАЗ У ЕФІРІ</div>
+      <img src={productImgUrl(product, 200, 200)} alt={product.name} className="h-[100px] w-full rounded-[10px] object-cover" />
+      <div className="mt-2 text-xs font-bold leading-snug">{product.name}</div>
+      <div className="mt-1 flex items-baseline gap-1.5">
+        <span className="text-[15px] font-extrabold text-accent2">{formatPrice(product.price)}</span>
+      </div>
+      <div className="mt-0.5 text-[10.5px] font-bold text-danger">Залишилось {stock} шт</div>
+      <button
+        onClick={() => addToCart(product.id)}
+        disabled={stock <= 0}
+        className="mt-2 w-full rounded-[10px] bg-accent py-2 text-xs font-extrabold text-white hover:brightness-110 disabled:opacity-40"
+      >
+        У кошик
+      </button>
+    </div>
+  );
+}
+
+function SidebarProduct({ productId, stockOverride }: { productId: number; stockOverride?: number }) {
+  const { product } = useProduct(productId);
+  const { addToCart } = useAppState();
+  if (!product) return null;
+  const stock = stockOverride ?? product.stock;
+
+  return (
+    <div className="flex gap-3 rounded-2xl border border-border bg-surface2 p-2.5">
+      <img src={productImgUrl(product, 128, 152)} alt={product.name} className="h-19 w-16 rounded-xl object-cover" />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="text-[12.5px] font-bold leading-snug">{product.name}</div>
+        <div className="mt-1 flex items-baseline gap-1.5">
+          <span className="text-sm font-extrabold">{formatPrice(product.price)}</span>
+        </div>
+        <div className="mt-0.5 text-[10.5px] font-bold text-danger">Залишилось {stock} шт</div>
+        <button
+          onClick={() => addToCart(product.id)}
+          disabled={stock <= 0}
+          className="mt-auto rounded-[9px] bg-accent py-1.5 text-[11.5px] font-extrabold text-white hover:brightness-110 disabled:opacity-40"
+        >
+          У кошик
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function LivePage() {
   const router = useRouter();
-  const { addToCart, toggleTheme } = useAppState();
-  const [chat, setChat] = useState(() => chatPool.slice(0, 4).map((c, i) => ({ id: i, name: c[0], text: c[1] })));
+  const searchParams = useSearchParams();
+  const requestedId = searchParams.get("id");
+  const { streams: allLive, loading: allLiveLoading } = useLiveStreams();
+
+  const streamId = requestedId ? Number(requestedId) : allLive[0]?.id ?? null;
+  const { stream, loading: streamLoading } = useStream(streamId);
+  const { viewerCount, stockUpdates } = useStreamPresence(streamId);
+  const { messages, sendMessage } = useLiveChat(streamId);
+
   const [chatInput, setChatInput] = useState("");
   const [following, setFollowing] = useState(false);
   const [giftPanelOpen, setGiftPanelOpen] = useState(false);
   const [coins] = useState(500);
   const [giftFx, setGiftFx] = useState<{ id: number; icon: string; name: string; sender: string }[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
-
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      const c = chatPool[Math.floor(Math.random() * chatPool.length)];
-      setChat((cur) => [...cur, { id: Date.now(), name: c[0], text: c[1] }].slice(-9));
-    }, 3200);
-    return () => clearInterval(intervalRef.current);
-  }, []);
 
   function sendChat() {
     if (!chatInput.trim()) return;
-    setChat((c) => [...c, { id: Date.now(), name: "Ви", text: chatInput }].slice(-9));
+    sendMessage(chatInput);
     setChatInput("");
   }
 
@@ -47,6 +99,28 @@ export default function LivePage() {
     const id = ++giftIdCounter;
     setGiftFx((fx) => [...fx, { id, icon: g.icon, name: g.name, sender: "Ви" }]);
     setTimeout(() => setGiftFx((fx) => fx.filter((f) => f.id !== id)), 2600);
+  }
+
+  if (allLiveLoading || streamLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black text-white">
+        Завантаження…
+      </div>
+    );
+  }
+
+  if (!stream) {
+    return (
+      <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-black text-white">
+        <div className="text-[15px] font-bold">Зараз немає активних ефірів</div>
+        <button
+          onClick={() => router.push("/feed")}
+          className="rounded-full bg-accent px-5 py-2.5 text-sm font-extrabold"
+        >
+          До стрічки
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -62,10 +136,10 @@ export default function LivePage() {
           >
             ✕
           </button>
-          <img src={avatarUrl(45)} alt="GlowUp Beauty" className="h-[38px] w-[38px] rounded-full border-2 border-danger object-cover" />
+          <img src={avatarUrl(45)} alt={stream.title} className="h-[38px] w-[38px] rounded-full border-2 border-danger object-cover" />
           <div className="min-w-0 text-white">
-            <div className="truncate text-[13px] font-extrabold">GlowUp Beauty</div>
-            <div className="text-[11px] font-semibold opacity-80">2,3K глядачів</div>
+            <div className="truncate text-[13px] font-extrabold">{stream.title}</div>
+            <div className="text-[11px] font-semibold opacity-80">{viewerCount} глядачів</div>
           </div>
           <span className="animate-pulse2 rounded-lg bg-danger px-2.5 py-1 text-[11px] font-extrabold text-white">
             LIVE
@@ -81,13 +155,13 @@ export default function LivePage() {
 
         <div className="absolute inset-x-3.5 bottom-3.5 flex flex-col gap-2.5">
           <div className="flex max-h-[200px] flex-col justify-end gap-1.5 overflow-hidden">
-            {chat.map((m) => (
+            {messages.slice(-9).map((m) => (
               <div
                 key={m.id}
                 className="animate-slideUp self-start rounded-xl bg-black/45 px-2.5 py-1.5 text-[12.5px] font-semibold text-white backdrop-blur-sm"
                 style={{ maxWidth: "85%" }}
               >
-                <b className="text-accent2">{m.name}</b> {m.text}
+                <b className="text-accent2">{m.authorName ?? `Користувач #${m.authorId}`}</b> {m.text}
               </div>
             ))}
           </div>
@@ -114,24 +188,9 @@ export default function LivePage() {
           </div>
         </div>
 
-        <div className="absolute right-3.5 top-[70px] w-[190px] rounded-2xl border border-white/20 bg-black/55 p-2.5 text-white backdrop-blur-md">
-          <div className="mb-1.5 text-[10px] font-extrabold tracking-wider text-accent2">ЗАРАЗ У ЕФІРІ · −30%</div>
-          <img src={imgUrl(liveProducts[0].seed, 200, 200)} alt={liveProducts[0].name} className="h-[100px] w-full rounded-[10px] object-cover" />
-          <div className="mt-2 text-xs font-bold leading-snug">{liveProducts[0].name}</div>
-          <div className="mt-1 flex items-baseline gap-1.5">
-            <span className="text-[15px] font-extrabold text-accent2">
-              {formatPrice(Math.round(liveProducts[0].price * 0.7))}
-            </span>
-            <span className="text-[11px] opacity-60 line-through">{formatPrice(liveProducts[0].price)}</span>
-          </div>
-          <div className="mt-0.5 text-[10.5px] font-bold text-danger">Залишилось {liveProducts[0].stock} шт</div>
-          <button
-            onClick={() => addToCart(liveProducts[0].id)}
-            className="mt-2 w-full rounded-[10px] bg-accent py-2 text-xs font-extrabold text-white hover:brightness-110"
-          >
-            У кошик
-          </button>
-        </div>
+        {stream.productIds[0] != null && (
+          <FeaturedProduct productId={stream.productIds[0]} stockOverride={stockUpdates[stream.productIds[0]]} />
+        )}
 
         <div className="pointer-events-none absolute bottom-[230px] left-4.5 z-[4] flex flex-col gap-2.5">
           {giftFx.map((g) => (
@@ -184,27 +243,10 @@ export default function LivePage() {
       </div>
 
       <div className="hidden w-[340px] flex-none flex-col border-l border-border bg-surface text-text lg:flex">
-        <div className="px-4.5 pb-2.5 pt-4.5 text-[15px] font-extrabold">Товари в ефірі · {liveProducts.length}</div>
+        <div className="px-4.5 pb-2.5 pt-4.5 text-[15px] font-extrabold">Товари в ефірі · {stream.productIds.length}</div>
         <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto px-3.5 pb-3.5">
-          {liveProducts.map((p) => (
-            <div key={p.id} className="flex gap-3 rounded-2xl border border-border bg-surface2 p-2.5">
-              <img src={imgUrl(p.seed, 128, 152)} alt={p.name} className="h-19 w-16 rounded-xl object-cover" />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <div className="text-[12.5px] font-bold leading-snug">{p.name}</div>
-                <div className="mt-1 flex items-baseline gap-1.5">
-                  <span className="text-sm font-extrabold">{formatPrice(Math.round(p.price * 0.7))}</span>
-                  <span className="text-[11px] text-muted line-through">{formatPrice(p.price)}</span>
-                  <span className="rounded-md bg-danger px-1.5 py-px text-[10px] font-extrabold text-white">−30%</span>
-                </div>
-                <div className="mt-0.5 text-[10.5px] font-bold text-danger">Залишилось {p.stock} шт</div>
-                <button
-                  onClick={() => addToCart(p.id)}
-                  className="mt-auto rounded-[9px] bg-accent py-1.5 text-[11.5px] font-extrabold text-white hover:brightness-110"
-                >
-                  У кошик
-                </button>
-              </div>
-            </div>
+          {stream.productIds.map((productId) => (
+            <SidebarProduct key={productId} productId={productId} stockOverride={stockUpdates[productId]} />
           ))}
         </div>
         <div

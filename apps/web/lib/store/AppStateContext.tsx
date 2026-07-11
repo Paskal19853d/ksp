@@ -31,8 +31,8 @@ interface AppState {
 const AppStateContext = createContext<AppState | null>(null);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([{ id: 1, qty: 1 }, { id: 5, qty: 1 }]);
-  const [favs, setFavs] = useState<number[]>([2]);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [favs, setFavs] = useState<number[]>([]);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();

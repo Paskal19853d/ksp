@@ -2,23 +2,24 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { products, imgUrl, formatPrice } from "@/lib/data/products";
+import { formatPrice } from "@/lib/data/products";
+import { useProducts, productImgUrl } from "@/lib/data/useProducts";
 
-const filterDefs = ["Знижки", "★ 4.8+", "До 2 000 ₴", "Новинки", "Безкоштовна доставка", "У наявності"];
+const filterDefs = ["Знижки", "★ 4.8+", "До 2 000 ₴", "У наявності"];
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
+  const { products } = useProducts({ search: query || undefined, limit: 60 });
 
   const results = useMemo(() => {
-    const q = query.toLowerCase();
-    let list = products.filter((p) => !q || p.name.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q));
-    if (activeFilters.includes("Знижки")) list = list.filter((p) => p.old);
+    let list = products;
+    if (activeFilters.includes("Знижки")) list = list.filter((p) => p.compareAtPrice > p.price);
     if (activeFilters.includes("★ 4.8+")) list = list.filter((p) => p.rating >= 4.8);
     if (activeFilters.includes("До 2 000 ₴")) list = list.filter((p) => p.price <= 2000);
-    if (activeFilters.includes("Новинки")) list = list.filter((p) => p.badge === "Новинка" || p.badge === "Хіт");
+    if (activeFilters.includes("У наявності")) list = list.filter((p) => p.stock > 0);
     return list;
-  }, [query, activeFilters]);
+  }, [products, activeFilters]);
 
   function toggleFilter(f: string) {
     setActiveFilters((cur) => (cur.includes(f) ? cur.filter((x) => x !== f) : [...cur, f]));
@@ -67,11 +68,11 @@ export default function SearchPage() {
             href={`/product/${p.id}`}
             className="cursor-pointer overflow-hidden rounded-card border border-border bg-surface hover:-translate-y-1 hover:shadow-card"
           >
-            <img src={imgUrl(p.seed, 480, 600)} alt={p.name} className="block aspect-[4/5] w-full object-cover" />
+            <img src={productImgUrl(p, 480, 600)} alt={p.name} className="block aspect-[4/5] w-full object-cover" />
             <div className="p-3.5 pb-4">
               <div className="text-[13.5px] font-bold leading-snug">{p.name}</div>
               <div className="mt-1 text-[11.5px] font-semibold text-muted">
-                ★ {p.rating} · {p.cat}
+                ★ {p.rating} · {p.category?.name}
               </div>
               <div className="mt-1.5 text-base font-extrabold">{formatPrice(p.price)}</div>
             </div>

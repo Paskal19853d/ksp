@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { products, imgUrl, avatarUrl, formatPrice, reviewCards, shopByName } from "@/lib/data/products";
+import { avatarUrl, formatPrice, shopByName } from "@/lib/data/products";
+import { useProduct, useProducts, productImgUrl, productBadge } from "@/lib/data/useProducts";
+import { useReviews } from "@/lib/data/useReviews";
 
 const colorNames = ["Чорний", "Білий", "Синій"];
 const sizeNames = ["S", "M", "L", "XL"];
@@ -18,20 +20,27 @@ export default function ProductPage() {
   const [selSize, setSelSize] = useState(1);
 
   const id = Number(params.id);
-  const product = products.find((p) => p.id === id) ?? products[0];
+  const { product, loading } = useProduct(id);
+  const { products: allProducts } = useProducts({ limit: 100 });
+  const { reviews } = useReviews(id);
+
+  if (loading || !product) {
+    return <div className="mx-auto max-w-[1060px] px-4 py-10 text-center text-muted">Завантаження…</div>;
+  }
+
   const isFav = favs.includes(product.id);
-  const discount = product.old ? `−${Math.round((1 - product.price / product.old) * 100)}%` : "";
+  const discount = productBadge(product) ?? "";
 
   const specs = [
-    { k: "Бренд", v: product.seller },
-    { k: "Категорія", v: product.cat },
+    { k: "Бренд", v: product.seller?.name },
+    { k: "Категорія", v: product.category?.name },
     { k: "Гарантія", v: "12 місяців" },
     { k: "Країна", v: "Україна / імпорт" },
-    { k: "Артикул", v: `TX-${1000 + product.id}` },
+    { k: "Артикул", v: product.sku || `TX-${1000 + product.id}` },
   ];
 
-  const similar = products.filter((p) => p.cat === product.cat && p.id !== product.id).slice(0, 4);
-  const sellerShop = shopByName(product.seller);
+  const similar = allProducts.filter((p) => p.categoryId === product.categoryId && p.id !== product.id).slice(0, 4);
+  const sellerShop = shopByName(product.seller?.name ?? "");
 
   return (
     <div className="mx-auto max-w-[1060px] px-4 pb-[130px]">
@@ -60,7 +69,7 @@ export default function ProductPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <div>
           <img
-            src={imgUrl(product.seed + (thumbIdx || ""), 800, 1000)}
+            src={productImgUrl({ imageSeed: product.imageSeed + (thumbIdx || "") }, 800, 1000)}
             alt={product.name}
             className="block aspect-[4/5] w-full rounded-card object-cover shadow-card"
           />
@@ -69,7 +78,7 @@ export default function ProductPage() {
               <img
                 key={i}
                 onClick={() => setThumbIdx(i)}
-                src={imgUrl(product.seed + (i || ""), 200, 250)}
+                src={productImgUrl({ imageSeed: product.imageSeed + (i || "") }, 200, 250)}
                 alt="фото"
                 className="h-[78px] w-16 cursor-pointer rounded-xl object-cover"
                 style={{
@@ -84,9 +93,9 @@ export default function ProductPage() {
         <div className="flex flex-col gap-4">
           <div>
             <div className="mb-2.5 flex gap-2">
-              {product.badge && (
+              {discount && (
                 <span className="rounded-lg bg-accent2 px-2.5 py-1 text-[11px] font-extrabold text-[#111]">
-                  {product.badge}
+                  {discount}
                 </span>
               )}
               <span className="rounded-lg bg-surface2 px-2.5 py-1 text-[11px] font-bold text-muted">
@@ -95,13 +104,13 @@ export default function ProductPage() {
             </div>
             <h1 className="m-0 text-2xl font-extrabold leading-snug">{product.name}</h1>
             <div className="mt-2 text-[13px] font-semibold text-muted">
-              ★ {product.rating} · {product.reviews} відгуків · продано 1 200+
+              ★ {product.rating} · {product.reviewCount} відгуків · продано {product.salesCount}+
             </div>
             <div className="mt-3 flex items-baseline gap-2.5">
               <span className="text-[30px] font-extrabold">{formatPrice(product.price)}</span>
-              {product.old > 0 && (
+              {product.compareAtPrice > 0 && (
                 <>
-                  <span className="text-base text-muted line-through">{formatPrice(product.old)}</span>
+                  <span className="text-base text-muted line-through">{formatPrice(product.compareAtPrice)}</span>
                   <span className="rounded-lg bg-danger px-2 py-1 text-xs font-extrabold text-white">{discount}</span>
                 </>
               )}
@@ -170,10 +179,10 @@ export default function ProductPage() {
             href={`/shop/${sellerShop.id}`}
             className="flex cursor-pointer items-center gap-3 rounded-card border border-border bg-surface p-3.5 hover:border-accent"
           >
-            <img src={avatarUrl(sellerShop.av)} alt={product.seller} className="h-[46px] w-[46px] rounded-full object-cover" />
+            <img src={avatarUrl(sellerShop.av)} alt={product.seller?.name} className="h-[46px] w-[46px] rounded-full object-cover" />
             <div className="flex-1">
               <div className="flex items-center gap-1.5 text-sm font-extrabold">
-                {product.seller} <span className="text-xs text-accent">✓</span>
+                {product.seller?.name} <span className="text-xs text-accent">✓</span>
               </div>
               <div className="text-xs font-semibold text-muted">★ 4.9 · {sellerShop.followers} підписників · Перевірений продавець</div>
             </div>
@@ -201,19 +210,28 @@ export default function ProductPage() {
         ))}
       </div>
 
-      <h2 className="mb-3 mt-7 text-[18px] font-extrabold">Відгуки · {product.reviews}</h2>
+      <h2 className="mb-3 mt-7 text-[18px] font-extrabold">Відгуки · {product.reviewCount}</h2>
       <div className="flex flex-col gap-2.5">
-        {reviewCards.map((r) => (
-          <div key={r.name} className="rounded-card border border-border bg-surface p-4">
+        {reviews.length === 0 && (
+          <div className="py-6 text-center text-[13px] font-semibold text-muted">Ще немає відгуків на цей товар</div>
+        )}
+        {reviews.map((r) => (
+          <div key={r.id} className="rounded-card border border-border bg-surface p-4">
             <div className="flex items-center gap-2.5">
-              <img src={avatarUrl(r.img)} alt={r.name} className="h-9 w-9 rounded-full object-cover" />
               <div className="flex-1">
-                <div className="text-[13px] font-extrabold">{r.name}</div>
-                <div className="text-[11px] font-semibold text-muted">{r.date}</div>
+                <div className="text-[11px] font-semibold text-muted">
+                  {new Date(r.createdAt).toLocaleDateString("uk-UA")}
+                </div>
               </div>
-              <span className="text-[13px] font-extrabold text-accent2">{r.stars}</span>
+              <span className="text-[13px] font-extrabold text-accent2">{"★".repeat(r.rating)}</span>
             </div>
             <div className="mt-2.5 text-[13.5px] leading-relaxed">{r.text}</div>
+            {r.reply && (
+              <div className="mt-2.5 rounded-xl bg-surface2 p-3 text-[12.5px] font-semibold leading-relaxed">
+                <span className="font-extrabold text-accent">Відповідь продавця: </span>
+                {r.reply}
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -229,7 +247,7 @@ export default function ProductPage() {
                 className="flex-none cursor-pointer overflow-hidden rounded-card border border-border bg-surface hover:-translate-y-1"
                 style={{ width: 160 }}
               >
-                <img src={imgUrl(p.seed, 300, 300)} alt={p.name} className="block aspect-square w-full object-cover" />
+                <img src={productImgUrl(p, 300, 300)} alt={p.name} className="block aspect-square w-full object-cover" />
                 <div className="p-3">
                   <div className="text-xs font-bold leading-snug">{p.name}</div>
                   <div className="mt-1.5 text-sm font-extrabold">{formatPrice(p.price)}</div>

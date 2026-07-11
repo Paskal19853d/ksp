@@ -3,12 +3,13 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { products, imgUrl } from "@/lib/data/products";
+import { useProducts, toCardData } from "@/lib/data/useProducts";
 import { ProductCard } from "@/components/ui/ProductCard";
 
 export default function FavoritesPage() {
   const router = useRouter();
   const { favs, toggleFav, addToCart } = useAppState();
+  const { products } = useProducts({ limit: 100 });
 
   const items = products.filter((p) => favs.includes(p.id));
 
@@ -39,19 +40,7 @@ export default function FavoritesPage() {
           {items.map((p) => (
             <div key={p.id} className="relative">
               <div onClick={() => router.push(`/product/${p.id}`)}>
-                <ProductCard
-                  product={{
-                    id: p.id,
-                    name: p.name,
-                    price: p.price,
-                    oldPrice: p.old || undefined,
-                    rating: p.rating,
-                    reviewCount: p.reviews,
-                    badgeLabel: p.badge || undefined,
-                    imageUrl: imgUrl(p.seed, 480, 600),
-                  }}
-                  onAddToCart={(id) => addToCart(id)}
-                />
+                <ProductCard product={toCardData(p)} onAddToCart={(id) => addToCart(id)} />
               </div>
               <span
                 onClick={(e) => {

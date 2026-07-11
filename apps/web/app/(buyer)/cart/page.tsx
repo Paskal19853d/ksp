@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { products, imgUrl, formatPrice } from "@/lib/data/products";
+import { formatPrice } from "@/lib/data/products";
+import { useProducts, productImgUrl } from "@/lib/data/useProducts";
 
 export default function CartPage() {
   const router = useRouter();
   const { cart, incQty, decQty, removeFromCart, cartCount } = useAppState();
   const [promoInput, setPromoInput] = useState("");
   const [promoApplied, setPromoApplied] = useState(false);
+  const { products } = useProducts({ limit: 100 });
 
   const items = cart
     .map((c) => ({ ...c, product: products.find((p) => p.id === c.id) }))
@@ -55,13 +57,13 @@ export default function CartPage() {
             {items.map((c) => (
               <div key={c.id} className="flex animate-slideUp gap-3.5 rounded-card border border-border bg-surface p-3">
                 <img
-                  src={imgUrl(c.product!.seed, 168, 200)}
+                  src={productImgUrl(c.product!, 168, 200)}
                   alt={c.product!.name}
                   className="h-[100px] w-[84px] rounded-xl object-cover"
                 />
                 <div className="flex flex-1 flex-col">
                   <div className="text-[13.5px] font-bold leading-snug">{c.product!.name}</div>
-                  <div className="mt-1 text-[11.5px] font-semibold text-muted">{c.product!.seller}</div>
+                  <div className="mt-1 text-[11.5px] font-semibold text-muted">{c.product!.seller?.name}</div>
                   <div className="mt-auto flex items-center gap-3">
                     <div className="flex items-center overflow-hidden rounded-[10px] bg-surface2">
                       <button onClick={() => decQty(c.id)} className="h-8 w-8 text-base font-extrabold">

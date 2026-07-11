@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find / -maxdepth 4 -iname \"*playwright*\" -type d 2>/dev/null | grep -v node_modules | head -10 *)",
+      "Read(//d//**)",
+      "Bash(npx --yes playwright@1.61.1 --version)",
+      "Bash(npx --yes playwright@1.61.1 --help)",
+      "Bash(export NODE_PATH=\"/c/Users/Paskal/AppData/Local/npm-cache/_npx/361ceb562f3b3235/node_modules\")",
+      "Bash(node playwright-chat-test.js 4)",
+      "Bash(node playwright-seller-live-test.js)"
+    ]
+  }
+}

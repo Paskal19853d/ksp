@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/store/AppStateContext";
-import { videos, products, imgUrl, avatarUrl, formatPrice, comments } from "@/lib/data/products";
+import { videos, imgUrl, avatarUrl, formatPrice, comments } from "@/lib/data/products";
+import { useProducts, productImgUrl } from "@/lib/data/useProducts";
 
 export default function VideoPage() {
   const router = useRouter();
@@ -12,11 +13,16 @@ export default function VideoPage() {
   const [liked, setLiked] = useState<Record<number, boolean>>({});
   const [following, setFollowing] = useState(false);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const { products, loading } = useProducts({ limit: 10 });
 
   const v = videos[idx];
-  const product = products.find((p) => p.id === v.pid)!;
+  const product = products[idx % Math.max(products.length, 1)];
   const isLiked = !!liked[idx];
-  const isFav = favs.includes(product.id);
+  const isFav = product ? favs.includes(product.id) : false;
+
+  if (loading || !product) {
+    return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black text-white">Завантаження…</div>;
+  }
 
   function next() {
     setIdx((i) => (i + 1) % videos.length);
@@ -83,7 +89,7 @@ export default function VideoPage() {
           </div>
           <div className="mt-2 text-[13px] font-semibold leading-relaxed opacity-95">{v.caption}</div>
           <div className="mt-2.5 flex items-center gap-2.5 rounded-2xl border border-white/20 bg-black/50 p-2.5 backdrop-blur-md">
-            <img src={imgUrl(product.seed, 84, 84)} alt={product.name} className="h-[42px] w-[42px] rounded-xl object-cover" />
+            <img src={productImgUrl(product, 84, 84)} alt={product.name} className="h-[42px] w-[42px] rounded-xl object-cover" />
             <div className="min-w-0 flex-1">
               <div className="truncate text-xs font-bold">{product.name}</div>
               <div className="text-sm font-extrabold text-accent2">{formatPrice(product.price)}</div>
