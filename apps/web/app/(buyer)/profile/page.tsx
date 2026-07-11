@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAppState } from "@/lib/store/AppStateContext";
+import { useAuth } from "@/lib/store/AuthContext";
 import { avatarUrl, imgUrl, orders } from "@/lib/data/products";
 
 const statusColors: Record<string, string> = {
@@ -20,19 +22,26 @@ const profileMenu = [
 ];
 
 export default function ProfilePage() {
+  const router = useRouter();
   const { theme, toggleTheme } = useAppState();
+  const { user, logout } = useAuth();
+
+  async function handleLogout() {
+    await logout();
+    router.push("/login");
+  }
 
   return (
     <div className="mx-auto max-w-[640px] px-4 pb-[120px]">
       <div className="flex items-center gap-3.5 py-6 pb-2">
         <img
-          src={avatarUrl(5)}
+          src={user?.avatarUrl || avatarUrl(5)}
           alt="профіль"
           className="h-[72px] w-[72px] rounded-full border-[3px] border-accent object-cover"
         />
         <div className="flex-1">
-          <div className="text-[19px] font-extrabold">Олена Коваленко</div>
-          <div className="text-[13px] font-semibold text-muted">@olena.kv · Київ</div>
+          <div className="text-[19px] font-extrabold">{user?.name}</div>
+          <div className="text-[13px] font-semibold text-muted">{user?.email}</div>
         </div>
         <button
           onClick={toggleTheme}
@@ -110,6 +119,13 @@ export default function ProfilePage() {
           </Link>
         ))}
       </div>
+
+      <button
+        onClick={handleLogout}
+        className="mt-5.5 w-full rounded-card border border-border bg-surface py-3.5 text-sm font-extrabold text-danger hover:border-danger"
+      >
+        Вийти з акаунту
+      </button>
     </div>
   );
 }

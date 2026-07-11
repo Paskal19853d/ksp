@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useAppState } from "@/lib/store/AppStateContext";
+import { useAuth } from "@/lib/store/AuthContext";
 
 const navDef: [string, string][] = [
   ["/feed", "Головна"],
@@ -13,7 +14,6 @@ const navDef: [string, string][] = [
   ["/chat", "Чат"],
   ["/notifs", "Сповіщення"],
   ["/cart", "Кошик"],
-  ["/profile", "Профіль"],
 ];
 
 const bottomNavDef: [string, string, string][] = [
@@ -21,11 +21,11 @@ const bottomNavDef: [string, string, string][] = [
   ["/search", "⌕", "Каталог"],
   ["/video", "▶", "Відео"],
   ["/cart", "🛍", "Кошик"],
-  ["/profile", "●", "Профіль"],
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
   const { cartCount, theme, toggleTheme } = useAppState();
   const unreadNotifs = 3;
   const badges: Record<string, string | null> = {
@@ -33,6 +33,8 @@ export function Sidebar() {
     "/notifs": unreadNotifs ? String(unreadNotifs) : null,
     "/chat": "1",
   };
+  const profileHref = user ? "/profile" : "/login";
+  const profileLabel = user ? "Профіль" : "Увійти";
 
   return (
     <aside className="sticky top-0 hidden h-screen w-[236px] flex-none flex-col gap-1.5 border-r border-border p-3.5 lg:flex">
@@ -60,6 +62,15 @@ export function Sidebar() {
           </Link>
         );
       })}
+      <Link
+        href={profileHref}
+        className={cn(
+          "flex items-center gap-2.5 rounded-2xl border-l-[3px] px-3.5 py-3 text-[15px] font-bold hover:bg-surface2",
+          pathname === profileHref ? "border-accent bg-surface2 text-text" : "border-transparent text-muted"
+        )}
+      >
+        <span>{profileLabel}</span>
+      </Link>
       <div className="flex-1" />
       <div
         onClick={toggleTheme}
@@ -84,6 +95,9 @@ export function Sidebar() {
 export function BottomNav() {
   const pathname = usePathname();
   const { cartCount } = useAppState();
+  const { user } = useAuth();
+  const profileHref = user ? "/profile" : "/login";
+  const profileLabel = user ? "Профіль" : "Увійти";
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-around border-t border-border bg-surface/95 px-1 pb-[calc(8px+env(safe-area-inset-bottom))] pt-2 backdrop-blur-lg lg:hidden">
@@ -108,6 +122,16 @@ export function BottomNav() {
           </Link>
         );
       })}
+      <Link
+        href={profileHref}
+        className={cn(
+          "relative flex flex-col items-center gap-0.5 px-2.5 py-1",
+          pathname === profileHref ? "text-accent" : "text-muted"
+        )}
+      >
+        <span className="text-[19px] leading-none">●</span>
+        <span className="text-[10px] font-bold">{profileLabel}</span>
+      </Link>
     </nav>
   );
 }

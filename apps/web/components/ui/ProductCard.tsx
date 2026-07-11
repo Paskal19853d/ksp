@@ -51,7 +51,10 @@ export function ProductCard({
         <Button
           variant="primary"
           className="mt-2.5 w-full !px-0 !py-2.5"
-          onClick={() => onAddToCart?.(product.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddToCart?.(product.id);
+          }}
         >
           У кошик
         </Button>

@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/store/AuthContext";
 
 export interface CartItem {
   id: number;
@@ -34,6 +36,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [toast, setToast] = useState<string | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>();
+  const router = useRouter();
+  const { user } = useAuth();
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -45,15 +49,22 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     toastTimer.current = setTimeout(() => setToast(null), 2200);
   }, []);
 
+  const requireAuth = useCallback(() => {
+    if (user) return true;
+    router.push("/login");
+    return false;
+  }, [user, router]);
+
   const addToCart = useCallback(
     (id: number) => {
+      if (!requireAuth()) return;
       setCart((c) => {
         const existing = c.find((i) => i.id === id);
         return existing ? c.map((i) => (i.id === id ? { ...i, qty: i.qty + 1 } : i)) : [...c, { id, qty: 1 }];
       });
       showToast("Додано в кошик ✓");
     },
-    [showToast]
+    [requireAuth, showToast]
   );
 
   const incQty = useCallback((id: number) => {
@@ -68,9 +79,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setCart((c) => c.filter((i) => i.id !== id));
   }, []);
 
-  const toggleFav = useCallback((id: number) => {
-    setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
-  }, []);
+  const toggleFav = useCallback(
+    (id: number) => {
+      if (!requireAuth()) return;
+      setFavs((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]));
+    },
+    [requireAuth]
+  );
 
   const toggleTheme = useCallback(() => {
     setTheme((t) => (t === "dark" ? "light" : "dark"));

@@ -28,7 +28,7 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-treetex}
       DB_NAME: ${DB_NAME:-treetex}
       JWT_SECRET: ${JWT_SECRET}
-      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:3000,http://127.0.0.1:3000}
       PORT: 4000
     ports:
       - "4000:4000"
@@ -46,7 +46,7 @@ services:
       dockerfile: apps/web/Dockerfile.dev
     restart: unless-stopped
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:4000
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:4000
     ports:
       - "3000:3000"
     volumes:
