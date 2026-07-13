@@ -14,6 +14,14 @@ import { ReviewsModule } from "./reviews/reviews.module";
 import { RedisModule } from "./redis/redis.module";
 import { RealtimeModule } from "./realtime/realtime.module";
 import { StreamsModule } from "./streams/streams.module";
+import { CmsModule } from "./cms/cms.module";
+import { MarketingModule } from "./marketing/marketing.module";
+import { ModerationModule } from "./moderation/moderation.module";
+import { FinanceModule } from "./finance/finance.module";
+import { BloggerModule } from "./blogger/blogger.module";
+import { NotificationsModule } from "./notifications/notifications.module";
+import { VideosModule } from "./videos/videos.module";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -41,6 +49,14 @@ import { StreamsModule } from "./streams/streams.module";
     ReviewsModule,
     RealtimeModule,
     StreamsModule,
+    CmsModule,
+    MarketingModule,
+    ModerationModule,
+    FinanceModule,
+    BloggerModule,
+    NotificationsModule,
+    VideosModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],

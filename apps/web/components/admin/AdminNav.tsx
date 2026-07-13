@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { useAdminState } from "@/lib/store/AdminStateContext";
+import { useAuth } from "@/lib/store/AuthContext";
+import { usePendingReports } from "@/lib/data/useReports";
 import { avatarUrl } from "@/lib/data/admin";
 
 const navDef: [string, string][] = [
@@ -26,17 +28,24 @@ const navDef: [string, string][] = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { sellers, reports, videos, products, comments, theme, toggleTheme } = useAdminState();
+  const router = useRouter();
+  const { sellers, comments, theme, toggleTheme } = useAdminState();
+  const { user, logout } = useAuth();
+  const { reports: pendingReports } = usePendingReports();
+
+  async function handleLogout() {
+    await logout();
+    router.push("/login");
+  }
   const pendingSellers = sellers.filter((s) => s.status === "На розгляді").length;
-  const pendingReports = reports.filter((r) => r.status === "На розгляді").length;
-  const pendingVideos = videos.filter((v) => v.status === "На розгляді").length;
-  const pendingProducts = products.filter((p) => p.status === "На розгляді").length;
   const pendingComments = comments.filter((c) => c.status === "На розгляді").length;
+  const pendingVideoReports = pendingReports.filter((r) => r.targetType === "video").length;
+  const pendingProductReports = pendingReports.filter((r) => r.targetType === "product").length;
   const badges: Record<string, string | null> = {
     "/admin/sellers": pendingSellers ? String(pendingSellers) : null,
-    "/admin/reports": pendingReports ? String(pendingReports) : null,
-    "/admin/moderation/videos": pendingVideos ? String(pendingVideos) : null,
-    "/admin/moderation/products": pendingProducts ? String(pendingProducts) : null,
+    "/admin/reports": pendingReports.length ? String(pendingReports.length) : null,
+    "/admin/moderation/videos": pendingVideoReports ? String(pendingVideoReports) : null,
+    "/admin/moderation/products": pendingProductReports ? String(pendingProductReports) : null,
     "/admin/moderation/comments": pendingComments ? String(pendingComments) : null,
   };
 
@@ -68,14 +77,21 @@ export function AdminSidebar() {
       })}
       <div className="flex-1" />
       <div className="flex items-center gap-2.5 rounded-2xl border border-border bg-surface p-2.5">
-        <img src={avatarUrl(1)} alt="Адмін" className="h-9 w-9 rounded-xl object-cover" />
+        <img src={user?.avatarUrl || avatarUrl(1)} alt={user?.name ?? "Адмін"} className="h-9 w-9 rounded-xl object-cover" />
         <div className="min-w-0 flex-1">
-          <div className="text-[12.5px] font-extrabold">Root Admin</div>
-          <div className="text-[10.5px] font-bold text-muted">Повний доступ</div>
+          <div className="truncate text-[12.5px] font-extrabold">{user?.name ?? "Адмін"}</div>
+          <div className="truncate text-[10.5px] font-bold text-muted">{user?.email ?? "Повний доступ"}</div>
         </div>
         <span onClick={toggleTheme} className="cursor-pointer text-sm text-muted">
           {theme === "dark" ? "☾" : "☀"}
         </span>
+        <button
+          onClick={handleLogout}
+          title="Вийти"
+          className="flex h-7 w-7 flex-none items-center justify-center rounded-full text-sm text-muted hover:bg-surface2 hover:text-danger"
+        >
+          ⏻
+        </button>
       </div>
     </aside>
   );
@@ -83,6 +99,14 @@ export function AdminSidebar() {
 
 export function AdminMobileNav() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  async function handleLogout() {
+    await logout();
+    router.push("/login");
+  }
+
   return (
     <div className="relative -mx-4.5 lg:hidden">
       <div className="flex gap-2 overflow-x-auto px-4.5 pb-3.5 no-scrollbar [mask-image:linear-gradient(to_right,transparent,black_16px,black_calc(100%_-_28px),transparent)]">
@@ -101,6 +125,13 @@ export function AdminMobileNav() {
             </Link>
           );
         })}
+        <button
+          onClick={handleLogout}
+          title="Вийти"
+          className="flex-none rounded-full border border-border bg-surface px-3.5 py-2 text-[12.5px] font-extrabold text-danger"
+        >
+          ⏻ Вийти
+        </button>
         <span className="flex-none px-1" aria-hidden />
       </div>
     </div>

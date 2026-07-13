@@ -48,7 +48,14 @@ export class AuthService {
     return this.buildAuthResult(user);
   }
 
-  private buildAuthResult(user: { id: number; name: string; email: string; role: string; avatarUrl?: string }) {
+  private buildAuthResult(user: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    avatarUrl?: string;
+    sellerStatus?: string | null;
+  }) {
     const accessToken = this.jwtService.sign({ sub: user.id, role: user.role });
     return {
       accessToken,
@@ -58,6 +65,7 @@ export class AuthService {
         email: user.email,
         role: user.role,
         avatarUrl: user.avatarUrl,
+        sellerStatus: user.sellerStatus ?? null,
       },
     };
   }

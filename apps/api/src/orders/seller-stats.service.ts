@@ -19,6 +19,30 @@ export class SellerStatsService {
     private readonly orderItemsRepository: Repository<OrderItemEntity>
   ) {}
 
+  async getRevenueTotals(sellerIds: number[]) {
+    const result = new Map<number, { revenue: number; orderCount: number }>();
+    if (sellerIds.length === 0) return result;
+
+    const rows = await this.orderItemsRepository
+      .createQueryBuilder("item")
+      .innerJoin("item.order", "order")
+      .where("item.sellerId IN (:...sellerIds)", { sellerIds })
+      .andWhere("order.status IN (:...statuses)", { statuses: COMPLETED_STATUSES })
+      .select("item.sellerId", "sellerId")
+      .addSelect("SUM(item.price * item.qty)", "revenue")
+      .addSelect("COUNT(DISTINCT order.id)", "orderCount")
+      .groupBy("item.sellerId")
+      .getRawMany<{ sellerId: number; revenue: string; orderCount: string }>();
+
+    for (const row of rows) {
+      result.set(row.sellerId, {
+        revenue: Number(row.revenue),
+        orderCount: Number(row.orderCount),
+      });
+    }
+    return result;
+  }
+
   async getStats(sellerId: number, period: StatsPeriod = "week") {
     const config = this.resolvePeriod(period);
 

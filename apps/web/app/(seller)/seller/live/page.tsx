@@ -21,6 +21,7 @@ export default function SellerLivePage() {
 
   const [creating, setCreating] = useState(false);
   const [title, setTitle] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [selectedProductIds, setSelectedProductIds] = useState<number[]>([]);
 
   const scheduled = streams.filter((s) => s.status === "scheduled");
@@ -37,9 +38,10 @@ export default function SellerLivePage() {
       return;
     }
     try {
-      await createStream({ title: title.trim(), productIds: selectedProductIds });
+      await createStream({ title: title.trim(), videoUrl: videoUrl.trim() || undefined, productIds: selectedProductIds });
       showToast("Ефір заплановано ✓");
       setTitle("");
+      setVideoUrl("");
       setSelectedProductIds([]);
       setCreating(false);
     } catch (e) {
@@ -125,6 +127,12 @@ export default function SellerLivePage() {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Назва ефіру"
             className="w-full rounded-xl border border-border bg-surface2 px-4 py-2.5 text-sm font-semibold outline-none"
+          />
+          <input
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+            placeholder="Посилання на відео (mp4/HLS) — тестове поле, поки нема реальної інтеграції"
+            className="mt-2.5 w-full rounded-xl border border-border bg-surface2 px-4 py-2.5 text-sm font-semibold outline-none"
           />
           <div className="mt-3.5 text-[12.5px] font-extrabold text-muted">Товари в ефірі</div>
           <div className="mt-2 flex flex-col gap-2 max-h-[260px] overflow-y-auto">

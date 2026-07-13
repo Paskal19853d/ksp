@@ -29,6 +29,20 @@ export class StreamsController {
     return this.streamsService.findLive();
   }
 
+  @Get("admin")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("admin")
+  findAllForAdmin() {
+    return this.streamsService.findAllForAdmin();
+  }
+
+  @Get("admin/summary")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("admin")
+  getAdminSummary() {
+    return this.streamsService.getAdminSummary();
+  }
+
   @Get("my")
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("seller")
@@ -77,5 +91,12 @@ export class StreamsController {
   @Roles("seller")
   end(@Param("id", ParseIntPipe) id: number, @CurrentUser() user: { id: number }) {
     return this.streamsService.end(id, user.id);
+  }
+
+  @Patch(":id/force-end")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("admin")
+  forceEnd(@Param("id", ParseIntPipe) id: number) {
+    return this.streamsService.forceEnd(id);
   }
 }

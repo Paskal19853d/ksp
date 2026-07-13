@@ -25,6 +25,13 @@ export class CategoriesController {
     return this.categoriesService.findAll();
   }
 
+  @Get("admin")
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles("admin")
+  findAllForAdmin() {
+    return this.categoriesService.findAllForAdmin();
+  }
+
   @Get(":id")
   findOne(@Param("id", ParseIntPipe) id: number) {
     return this.categoriesService.findOne(id);

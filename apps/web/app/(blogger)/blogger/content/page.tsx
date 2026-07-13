@@ -4,6 +4,10 @@ import { useState } from "react";
 import { useBloggerState } from "@/lib/store/BloggerStateContext";
 import type { ContentItem } from "@/lib/data/blogger";
 
+// Intentionally still mock: content scheduling/publishing (video/live/post
+// planner) has no backend entity — same short-video content gap noted in
+// Moderation and the blogger dashboard. Nothing here to attach real data to yet.
+
 const statusColors: Record<string, string> = {
   Заплановано: "bg-accent2 text-[#111]",
   Опубліковано: "bg-success text-white",

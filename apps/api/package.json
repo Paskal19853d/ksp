@@ -41,7 +41,8 @@
     "rxjs": "7.8.1",
     "@aws-sdk/client-s3": "3.699.0",
     "@aws-sdk/s3-request-presigner": "3.699.0",
-    "uuid": "9.0.1"
+    "uuid": "9.0.1",
+    "sanitize-html": "2.13.1"
   },
   "devDependencies": {
     "@nestjs/cli": "10.4.4",
@@ -51,6 +52,7 @@
     "@types/cookie-parser": "1.4.7",
     "@types/cookie": "0.6.0",
     "@types/uuid": "9.0.8",
+    "@types/sanitize-html": "2.13.0",
     "ts-node": "10.9.2",
     "typescript": "5.5.3"
   }

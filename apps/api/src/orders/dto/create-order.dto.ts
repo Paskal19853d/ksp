@@ -4,6 +4,7 @@ import {
   IsArray,
   IsIn,
   IsInt,
+  IsOptional,
   IsString,
   Matches,
   MaxLength,
@@ -51,4 +52,12 @@ export class CreateOrderDto {
 
   @IsIn(PAYMENT_METHODS)
   paymentMethod: string;
+
+  // Blogger affiliate link code, if the buyer arrived via one — attributed to
+  // whichever cart item's productId matches the link's product (see
+  // OrdersService.create). Absent for ordinary, non-referred purchases.
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  refCode?: string;
 }

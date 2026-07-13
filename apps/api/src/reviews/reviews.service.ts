@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { DataSource, Repository } from "typeorm";
 import { ReviewEntity } from "./entities/review.entity";
 import { OrderItemEntity } from "../orders/entities/order-item.entity";
@@ -14,12 +15,22 @@ import { ProductEntity } from "../products/entities/product.entity";
 import { CreateReviewDto } from "./dto/create-review.dto";
 import { QueryReviewsDto } from "./dto/query-reviews.dto";
 
+export class ReviewCreatedEvent {
+  constructor(
+    public readonly reviewId: number,
+    public readonly sellerId: number,
+    public readonly productId: number,
+    public readonly rating: number
+  ) {}
+}
+
 @Injectable()
 export class ReviewsService {
   constructor(
     @InjectRepository(ReviewEntity)
     private readonly reviewsRepository: Repository<ReviewEntity>,
-    private readonly dataSource: DataSource
+    private readonly dataSource: DataSource,
+    private readonly eventEmitter: EventEmitter2
   ) {}
 
   async create(authorId: number, dto: CreateReviewDto) {
@@ -59,6 +70,15 @@ export class ReviewsService {
 
       await this.recomputeProductRating(manager, orderItem.productId);
 
+      return saved;
+    }).then((saved) => {
+      // Emitted after the transaction commits, mirroring the pattern in
+      // OrdersService — a rollback must never announce a review that
+      // doesn't actually exist.
+      this.eventEmitter.emit(
+        "review.created",
+        new ReviewCreatedEvent(saved.id, saved.sellerId, saved.productId, saved.rating)
+      );
       return saved;
     });
   }

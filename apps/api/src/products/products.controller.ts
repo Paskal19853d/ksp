@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -43,7 +44,17 @@ export class ProductsController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles("seller")
-  create(@CurrentUser() user: { id: number }, @Body() dto: CreateProductDto) {
+  create(
+    @CurrentUser() user: { id: number; sellerStatus?: string | null },
+    @Body() dto: CreateProductDto
+  ) {
+    if (user.sellerStatus !== "approved") {
+      throw new ForbiddenException(
+        user.sellerStatus === "rejected"
+          ? "Заявку на продаж відхилено"
+          : "Ваш акаунт продавця ще не підтверджено адміністратором"
+      );
+    }
     return this.productsService.create(user.id, dto);
   }
 

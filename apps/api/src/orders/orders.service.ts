@@ -10,6 +10,8 @@ import { DataSource, Repository } from "typeorm";
 import { OrderEntity, OrderStatus } from "./entities/order.entity";
 import { OrderItemEntity } from "./entities/order-item.entity";
 import { ProductEntity } from "../products/entities/product.entity";
+import { CommissionRuleEntity } from "../finance/entities/commission-rule.entity";
+import { AffiliateLinkEntity } from "../blogger/entities/affiliate-link.entity";
 import { CreateOrderDto } from "./dto/create-order.dto";
 
 export class ProductPurchasedEvent {
@@ -19,6 +21,27 @@ export class ProductPurchasedEvent {
   ) {}
 }
 
+export class OrderCreatedEvent {
+  constructor(
+    public readonly orderId: number,
+    public readonly orderNo: string,
+    public readonly sellerId: number
+  ) {}
+}
+
+export class OrderStatusChangedEvent {
+  constructor(
+    public readonly orderId: number,
+    public readonly orderNo: string,
+    public readonly buyerId: number,
+    public readonly status: OrderStatus
+  ) {}
+}
+
+// Applied when a product's category has no explicit CommissionRuleEntity row —
+// keeps checkout working even before an admin has configured every category.
+const DEFAULT_COMMISSION_PCT = 10;
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -27,6 +50,10 @@ export class OrdersService {
     private readonly dataSource: DataSource,
     private readonly eventEmitter: EventEmitter2
   ) {}
+
+  countAll() {
+    return this.ordersRepository.count();
+  }
 
   async create(buyerId: number, dto: CreateOrderDto) {
     const purchaseEvents: ProductPurchasedEvent[] = [];
@@ -39,6 +66,22 @@ export class OrdersService {
 
       if (products.length !== new Set(productIds).size) {
         throw new NotFoundException("Один або декілька товарів не знайдено");
+      }
+
+      const categoryIds = [...new Set(products.map((p) => p.categoryId))];
+      const commissionRules = await manager.find(CommissionRuleEntity, {
+        where: categoryIds.map((id) => ({ categoryId: id })),
+      });
+      const commissionByCategory = new Map(commissionRules.map((r) => [r.categoryId, r.pct]));
+
+      // Resolve the affiliate link once per order — only applied to whichever
+      // cart item matches the link's product, silently ignored otherwise
+      // (an invalid/expired code must never block checkout).
+      let affiliateLink: AffiliateLinkEntity | null = null;
+      if (dto.refCode) {
+        affiliateLink = await manager.findOne(AffiliateLinkEntity, {
+          where: { code: dto.refCode, active: true },
+        });
       }
 
       const items: OrderItemEntity[] = [];
@@ -72,6 +115,13 @@ export class OrdersService {
         item.price = product.price;
         item.qty = input.qty;
         item.sellerId = product.sellerId;
+        item.commissionPct = commissionByCategory.get(product.categoryId) ?? DEFAULT_COMMISSION_PCT;
+
+        if (affiliateLink && affiliateLink.productId === product.id) {
+          item.bloggerId = affiliateLink.bloggerId;
+          item.affiliateCommissionPct = affiliateLink.pct;
+        }
+
         items.push(item);
         sum += product.price * input.qty;
 
@@ -99,6 +149,14 @@ export class OrdersService {
     // that didn't actually happen.
     for (const event of purchaseEvents) {
       this.eventEmitter.emit("product.purchased", event);
+    }
+
+    const sellerIds = [...new Set(savedOrder.items.map((i) => i.sellerId))];
+    for (const sellerId of sellerIds) {
+      this.eventEmitter.emit(
+        "order.created",
+        new OrderCreatedEvent(savedOrder.id, savedOrder.orderNo, sellerId)
+      );
     }
 
     return savedOrder;
@@ -144,7 +202,12 @@ export class OrdersService {
       throw new ForbiddenException("Ви не можете змінювати статус цього замовлення");
     }
     order.status = status;
-    return this.ordersRepository.save(order);
+    const saved = await this.ordersRepository.save(order);
+    this.eventEmitter.emit(
+      "order.status_changed",
+      new OrderStatusChangedEvent(saved.id, saved.orderNo, saved.buyerId, saved.status)
+    );
+    return saved;
   }
 
   async requestReturn(id: number, buyerId: number, reason: string) {

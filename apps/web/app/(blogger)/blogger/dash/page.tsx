@@ -3,6 +3,13 @@
 import { useState } from "react";
 import { bloggerDashboardByPeriod, bloggerTopProducts, bloggerImgUrl } from "@/lib/data/blogger";
 
+// Intentionally still mock: a real version needs per-click event logs with
+// timestamps (currently only a running total counter exists on
+// AffiliateLinkEntity.clicks — see apps/api/src/blogger) and video view
+// counts (no video-content entity yet, same gap noted in Moderation).
+// Real, already-wired data: /blogger/links (clicks total, commission %) and
+// /blogger/balance + /blogger/payouts — see blogger/links and blogger/payouts pages.
+
 const periods = ["Сьогодні", "Тиждень", "Місяць"];
 
 export default function BloggerDashPage() {

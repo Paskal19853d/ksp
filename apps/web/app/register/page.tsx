@@ -48,7 +48,9 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-bg px-4 py-10 font-sans text-text">
       <div className="w-full max-w-[420px]">
         <div className="mb-6 text-center">
-          <div className="font-display text-xl font-extrabold tracking-wide">TREETEX</div>
+          <Link href="/feed" className="font-display text-xl font-extrabold tracking-wide">
+            TREETEX
+          </Link>
           <div className="mt-1 text-sm font-semibold text-muted">Реєстрація</div>
         </div>
 
@@ -101,6 +103,12 @@ export default function RegisterPage() {
           Вже є акаунт?{" "}
           <Link href="/login" className="text-accent">
             Увійти
+          </Link>
+        </div>
+
+        <div className="mt-2.5 text-center text-[13px] font-semibold">
+          <Link href="/feed" className="text-muted hover:text-accent">
+            Переглянути без реєстрації →
           </Link>
         </div>
       </div>

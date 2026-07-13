@@ -3,6 +3,10 @@
 import { useAdminState } from "@/lib/store/AdminStateContext";
 import { ComingSoon } from "@/components/admin/ComingSoon";
 
+// Intentionally still mock: this queue is for comments on videos/products
+// (a content-comment feature with no backend entity yet) — not the same thing
+// as live-stream chat (ChatMessageEntity), which is real and already
+// moderatable via the generic /reports API (targetType: "chat_message").
 export default function AdminModerationCommentsPage() {
   const { comments, resolveComment } = useAdminState();
   const pending = comments.filter((c) => c.status === "На розгляді");

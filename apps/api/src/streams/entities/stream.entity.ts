@@ -31,6 +31,11 @@ export class StreamEntity {
   @Column({ type: "text", default: "" })
   description: string;
 
+  // Placeholder for real video infra (ENGINE.md §4 — deferred to a managed
+  // provider like Cloudflare Stream/Mux). For now just a direct mp4/HLS URL.
+  @Column({ type: "varchar", length: 500, default: "" })
+  videoUrl: string;
+
   @Index()
   @Column({ type: "varchar", length: 20, default: "scheduled" })
   status: StreamStatus;

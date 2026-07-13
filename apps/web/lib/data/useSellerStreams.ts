@@ -24,7 +24,13 @@ export function useSellerStreams() {
   }, [reload]);
 
   const createStream = useCallback(
-    async (input: { title: string; description?: string; productIds?: number[]; scheduledAt?: string }) => {
+    async (input: {
+      title: string;
+      description?: string;
+      videoUrl?: string;
+      productIds?: number[];
+      scheduledAt?: string;
+    }) => {
       await api.post("/streams", input);
       await reload();
     },

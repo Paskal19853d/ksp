@@ -126,7 +126,19 @@ export default function LivePage() {
   return (
     <div className="fixed inset-0 z-50 flex animate-fadeIn bg-black">
       <div className="relative min-w-0 flex-1">
-        <img src={imgUrl("livebeauty", 900, 1400)} alt="ефір" className="absolute inset-0 h-full w-full object-cover" />
+        {stream.videoUrl ? (
+          <video
+            key={stream.videoUrl}
+            src={stream.videoUrl}
+            autoPlay
+            muted
+            loop
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        ) : (
+          <img src={imgUrl("livebeauty", 900, 1400)} alt="ефір" className="absolute inset-0 h-full w-full object-cover" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 from-0% via-transparent via-45% to-black/85" />
 
         <div className="absolute inset-x-0 top-0 flex items-center gap-2.5 p-4">

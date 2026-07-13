@@ -32,7 +32,33 @@ export class OrderItemEntity {
   @Column({ type: "int" })
   qty: number;
 
+  // Commission rate at purchase time — snapshot, not a live lookup, so a later
+  // change to the category's rate never retroactively rewrites past payouts.
+  @Column({ type: "int", default: 0 })
+  commissionPct: number;
+
   @Index()
   @Column()
   sellerId: number;
+
+  // Set once this item is claimed by a payout, so the same revenue can never
+  // be included in two payouts — the source of truth for "already paid out".
+  @Index()
+  @Column({ nullable: true })
+  payoutId?: number;
+
+  // Affiliate attribution — set only if the order was placed through a
+  // blogger's link (see AffiliateLinkEntity). Independent from payoutId:
+  // the same item owes the seller their net revenue AND, separately, owes
+  // the blogger their affiliate cut — two distinct payout streams.
+  @Index()
+  @Column({ nullable: true })
+  bloggerId?: number;
+
+  @Column({ type: "int", nullable: true })
+  affiliateCommissionPct?: number;
+
+  @Index()
+  @Column({ nullable: true })
+  affiliatePayoutId?: number;
 }
